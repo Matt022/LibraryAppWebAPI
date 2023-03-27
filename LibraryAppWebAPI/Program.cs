@@ -1,0 +1,62 @@
+using LibraryAppWebAPI.DataContext;
+using LibraryAppWebAPI.Repository;
+using LibraryAppWebAPI.Repository.Interfaces;
+using LibraryAppWebAPI.Service;
+using LibraryAppWebAPI.Service.IServices;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+{
+    // Add services to the container.
+
+    builder.Services.AddControllers();
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+    builder.Services.AddScoped<IBookRepository, BookRepository>();
+    builder.Services.AddScoped<IDvdRepository, DvdRepository>();
+    builder.Services.AddScoped<IMemberRepository, MemberRepository>();
+    builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+    builder.Services.AddScoped<IQueueItemRepository, QueueItemRepository>();
+    builder.Services.AddScoped<IRentalEntryRepository, RentalEntryRepository>();
+    builder.Services.AddScoped<IMessagingService, MessagingService>();
+    builder.Services.AddScoped<IQueueService, QueueService>();
+    builder.Services.AddScoped<IRentalEntryService, RentalEntryService>();
+
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(options =>
+    {
+         options.SwaggerDoc("v1", new OpenApiInfo { Title = "Library App REST Api documentation", Version = "v1" });
+    });
+
+    builder.Services.AddDbContext<LibraryContext>(options =>
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    });
+    builder.Services.AddCors(options => options.AddPolicy("default", policy =>
+    {
+        policy.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod();
+    }));
+}
+
+WebApplication app = builder.Build();
+{
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        });
+    }
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
+}
