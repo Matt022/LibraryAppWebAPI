@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryAppWebAPI.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20230326194111_justPostAndReviews")]
-    partial class justPostAndReviews
+    [Migration("20230329133758_setup")]
+    partial class setup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -117,34 +117,6 @@ namespace LibraryAppWebAPI.Migrations
                     b.ToTable("Messages");
                 });
 
-            modelBuilder.Entity("LibraryAppWebAPI.Models.Post", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Post");
-                });
-
             modelBuilder.Entity("LibraryAppWebAPI.Models.QueueItem", b =>
                 {
                     b.Property<int>("Id")
@@ -207,38 +179,6 @@ namespace LibraryAppWebAPI.Migrations
                     b.HasIndex("TitleId");
 
                     b.ToTable("RentalEntries");
-                });
-
-            modelBuilder.Entity("LibraryAppWebAPI.Models.Review", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PostId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PostId");
-
-                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("LibraryAppWebAPI.Models.Book", b =>
@@ -315,22 +255,6 @@ namespace LibraryAppWebAPI.Migrations
                     b.Navigation("Member");
 
                     b.Navigation("Title");
-                });
-
-            modelBuilder.Entity("LibraryAppWebAPI.Models.Review", b =>
-                {
-                    b.HasOne("LibraryAppWebAPI.Models.Post", "Post")
-                        .WithMany("Reviews")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Post");
-                });
-
-            modelBuilder.Entity("LibraryAppWebAPI.Models.Post", b =>
-                {
-                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }

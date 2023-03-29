@@ -6,9 +6,6 @@ using LibraryAppWebAPI.Service;
 using LibraryAppWebAPI.Service.IServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Swashbuckle.Swagger;
-using System.Reflection;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 {
@@ -38,10 +35,16 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
     {
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     });
-    builder.Services.AddCors(options => options.AddPolicy("default", policy =>
+
+    builder.Services.AddCors(options =>
     {
-        policy.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod();
-    }));
+        options.AddDefaultPolicy(builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
+    });
 }
 
 WebApplication app = builder.Build();
@@ -58,7 +61,9 @@ WebApplication app = builder.Build();
 
     app.UseHttpsRedirection();
 
-    app.UseCors("default");
+    app.UseCors();
+
+    app.UseRouting();
 
     app.UseAuthorization();
 
