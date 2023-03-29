@@ -5,11 +5,13 @@ using LibraryAppWebAPI.Repository.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using LibraryAppWebAPI.Base;
 using LibraryAppWebAPI.Service.IServices;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace LibraryAppWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [SwaggerTag("QueueItems")]
     public class QueueItemsController : ControllerBase
     {
         private readonly IQueueItemRepository _queueItemRepository;
@@ -29,6 +31,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Get all queue items", Tags = new[] { "QueueItems" })]
         public ActionResult<IEnumerable<QueueItem>> GetQueueItems()
         {
             IEnumerable<QueueItem> queueItems = _queueItemRepository.GetAll();
@@ -43,6 +46,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(QueueItem))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Get a queue item by id", Tags = new[] { "QueueItems" })]
         public ActionResult<QueueItem> GetQueueItem(int id)
         {
             QueueItem queueItem = _queueItemRepository.GetById(id);
@@ -58,6 +62,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(QueueItem))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Get all queue items by title id", Tags = new[] { "QueueItems" })]
         public ActionResult<List<QueueItem>> GetAllQueueItemsByTitle(int titleId)
         {
             List<QueueItem> queueItems = _queueItemRepository.GetAllQueueByTitleId(titleId);
@@ -80,6 +85,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
+        [SwaggerOperation(Summary = "Create a queue item", Tags = new[] { "QueueItems" })]
         public ActionResult<QueueItem> CreateQueueItem([FromBody] QueueItemDto queueItemCreate)
         {
             if (!ModelState.IsValid)
@@ -106,6 +112,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Update a queue item", Tags = new[] { "QueueItems" })]
         public IActionResult UpdateQueueItem(int id, [FromBody] QueueItemDto queueItemRequest)
         {
             if (!_queueItemRepository.QueueItemExists(id))
@@ -134,6 +141,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Delete a queue item by id", Tags = new[] { "QueueItems" })]
         public IActionResult DeleteQueueItem(int id)
         {
             if (!_queueItemRepository.QueueItemExists(id))

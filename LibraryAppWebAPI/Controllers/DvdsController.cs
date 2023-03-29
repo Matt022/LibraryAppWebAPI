@@ -3,11 +3,13 @@ using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Repository.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using LibraryAppWebAPI.Models.DTOs;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace LibraryAppWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [SwaggerTag("Dvds")]
     public class DvdsController : ControllerBase
     {
         private readonly IDvdRepository _dvdRepository;
@@ -21,6 +23,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Get all dvds", Tags = new[] { "Dvds" })]
         public ActionResult<IEnumerable<Dvd>> GetDvds()
         {
             IEnumerable<Dvd> dvds = _dvdRepository.GetAll();
@@ -35,6 +38,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Get dvd by id", Tags = new[] { "Dvds" })]
         public ActionResult<Dvd> GetDvd(int id)
         {
             Dvd dvd = _dvdRepository.GetById(id);
@@ -51,6 +55,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [SwaggerOperation(Summary = "Create a dvd", Tags = new[] { "Dvds" })]
         public ActionResult<Dvd> CreateDvd([FromBody] DvdDto dvdRequest)
         {
             if (!ModelState.IsValid)
@@ -82,6 +87,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
         [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [SwaggerOperation(Summary = "Update a dvd", Tags = new[] { "Dvds" })]
         public IActionResult UpdateDvd(int id, [FromBody] DvdDto dvdRequest)
         {
             if (!_dvdRepository.DvdExists(id))
@@ -115,6 +121,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Delete a dvd by id", Tags = new[] { "Dvds" })]
         public IActionResult DeleteDvd(int id)
         {
             if (!_dvdRepository.DvdExists(id))

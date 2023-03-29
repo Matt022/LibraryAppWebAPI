@@ -1,3 +1,4 @@
+using LibraryAppWebAPI;
 using LibraryAppWebAPI.DataContext;
 using LibraryAppWebAPI.Repository;
 using LibraryAppWebAPI.Repository.Interfaces;
@@ -6,6 +7,8 @@ using LibraryAppWebAPI.Service.IServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Swashbuckle.Swagger;
+using System.Reflection;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 {
@@ -27,7 +30,8 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
-         options.SwaggerDoc("v1", new OpenApiInfo { Title = "Library App REST Api documentation", Version = "v1" });
+        options.SwaggerDoc("v1", new OpenApiInfo { Title = "Library App REST Api documentation", Version = "v1" });
+        options.EnableAnnotations();
     });
 
     builder.Services.AddDbContext<LibraryContext>(options =>
@@ -53,6 +57,8 @@ WebApplication app = builder.Build();
     }
 
     app.UseHttpsRedirection();
+
+    app.UseCors("default");
 
     app.UseAuthorization();
 

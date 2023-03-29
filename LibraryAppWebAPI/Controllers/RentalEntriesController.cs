@@ -10,6 +10,7 @@ namespace LibraryAppWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [SwaggerTag("RentalEntries")]
     public class RentalEntriesController : ControllerBase
     {
         private readonly IRentalEntryRepository _rentalEntryRepository;
@@ -29,7 +30,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Tags = new[] { "Get methods" })]
+        [SwaggerOperation(Summary = "Get all rental entries", Tags = new[] { "RentalEntries" })]
         public ActionResult<IEnumerable<RentalEntry>> GetRentalEntries()
         {
             IEnumerable<RentalEntry> rentalEntries = _rentalEntryRepository.GetAll();
@@ -43,7 +44,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet("PastDue")]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Tags = new[] { "Get methods" })]
+        [SwaggerOperation(Summary = "Get all rental entries, that are past due and not returned yet", Tags = new[] { "RentalEntries" })]
         public ActionResult<IEnumerable<RentalEntry>> GetRentalEntriesPastDue()
         {
             IEnumerable<RentalEntry> rentalEntries = _rentalEntryRepository.GetRentalEntriesPastDue();
@@ -57,7 +58,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet("NotReturned")]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Tags = new[] { "Get methods" })]
+        [SwaggerOperation(Summary = "Get all unreturned rental entries", Tags = new[] { "RentalEntries" })]
         public ActionResult<IEnumerable<RentalEntry>> GetUnreturnedRentalEntries()
         {
             IEnumerable<RentalEntry> rentalEntries = _rentalEntryRepository.GetUnreturnedRentalEntries();
@@ -71,8 +72,8 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet("NotReturned/{memberId}")]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Tags = new[] { "Get methods" })]
-        public ActionResult<IEnumerable<RentalEntry>> GetUnreturnedRentalEntries(int memberId)
+        [SwaggerOperation(Summary = "Get all unreturned rental entries by member Id", Tags = new[] { "RentalEntries" })]
+        public ActionResult<IEnumerable<RentalEntry>> GetUnreturnedRentalEntriesByMemberId(int memberId)
         {
             Member member = null;
             if (!_memberRepository.MemberExists(memberId))
@@ -96,7 +97,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(RentalEntry))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Tags = new[] { "Get methods" })]
+        [SwaggerOperation(Summary = "Get rental entry by Id", Tags = new[] { "RentalEntries" })]
         public ActionResult<RentalEntry> GetRentalEntry(int id)
         {
             RentalEntry rentalEntry = _rentalEntryRepository.GetById(id);
@@ -112,7 +113,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Tags = new[] { "Get methods" })]
+        [SwaggerOperation(Summary = "Get all rental entries by member Id", Tags = new[] { "RentalEntries" })]
         public ActionResult<IEnumerable<RentalEntry>> GetRentalEntryByMemberId(int id)
         {
             Member member = _memberRepository.GetById(id);
@@ -133,6 +134,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [SwaggerOperation(Summary = "Create a rent or rent a title", Tags = new[] { "RentalEntries" })]
         public ActionResult<Member> RentTitle([FromBody] RentalEntryDto rentalEntryCreate)
         {
             if (!ModelState.IsValid)
@@ -166,6 +168,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
         [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [SwaggerOperation(Summary = "Return a title", Tags = new[] { "RentalEntries" })]
         public IActionResult ReturnTitle(int id, [FromBody] ReturnTitleDto returnTitle)
         {
             string message = "";
@@ -196,6 +199,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
         [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [SwaggerOperation(Summary = "Prolong a title", Tags = new[] { "RentalEntries" })]
         public IActionResult ProlongTitle(int id, [FromBody] ReturnTitleDto prolongTitle)
         {
             string message = "";
@@ -227,6 +231,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
         [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [SwaggerOperation(Summary = "Update a rental entry", Tags = new[] { "RentalEntries" })]
         public IActionResult UpdateRentalEntry(int id, [FromBody] RentalEntryDto rentalEntryUpdate)
         {
             if (!_rentalEntryRepository.RentalEntryExists(id))
@@ -253,6 +258,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Delete a rental entry", Tags = new[] { "RentalEntries" })]
         public IActionResult DeleteRentalEntry(int id)
         {
             if (!_rentalEntryRepository.RentalEntryExists(id))

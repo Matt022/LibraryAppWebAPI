@@ -3,11 +3,13 @@ using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Repository.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using LibraryAppWebAPI.Models.DTOs;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace LibraryAppWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [SwaggerTag("Books")]
     public class BooksController : ControllerBase
     {
         private readonly IBookRepository _bookRepository;
@@ -21,6 +23,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Get all books", Tags = new[] { "Books" })]
         public ActionResult<IEnumerable<Book>> GetBooks()
         {
             IEnumerable<Book> books = _bookRepository.GetAll();
@@ -35,6 +38,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(Book))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Get a book by Id", Tags = new[] { "Books" })]
         public ActionResult<Book> GetBook(int id)
         {
             Book book = _bookRepository.GetById(id);
@@ -50,6 +54,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [SwaggerOperation(Summary = "Create a book", Tags = new[] { "Books"})]
         public ActionResult<Book> CreateBook([FromBody] BookDto bookRequest)
         {
             if (!ModelState.IsValid)
@@ -80,6 +85,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Update a book", Tags = new[] { "Books" })]
         public IActionResult UpdateBook(int id, [FromBody] BookDto bookRequest)
         {
             if (!_bookRepository.BookExists(id))
@@ -116,6 +122,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [SwaggerOperation(Summary = "Delete a book by Id", Tags = new[] { "Books" })]
         public IActionResult DeleteBook(int id)
         {
             if (!_bookRepository.BookExists(id))
