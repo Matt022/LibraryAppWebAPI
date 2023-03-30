@@ -15,4 +15,6 @@ public interface IQueueItemRepository : IRepository<QueueItem>
     QueueItem GetByTitleId(int id);
 
     Title GetBookOrDvd(int titleId);
+
+    bool QueueItemByMemberIdExist(int memberId);
 }

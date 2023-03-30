@@ -14,4 +14,8 @@ public interface IRentalEntryRepository : IRepository<RentalEntry>
     List<RentalEntry> GetUnreturnedRentalEntriesByMemberId(int memberId);
     bool CanProlongRental(RentalEntry entry);
     IEnumerable<RentalEntry> Find(Expression<Func<RentalEntry, bool>> expression);
+
+    bool RentalEntryByTitleIdExist(int titleId);
+
+    bool RentalEntryByMemberIdExist(int memberId);
 }

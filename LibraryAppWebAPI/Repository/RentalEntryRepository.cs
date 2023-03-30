@@ -227,4 +227,25 @@ public class RentalEntryRepository : IRentalEntryRepository
         }
         return title;
     }
+    #region BoolMethods 
+    public bool RentalEntryByTitleIdExist(int titleId)
+    {
+        bool rentalEntriesByTitleId = _context.RentalEntries.Any(e => e.TitleId == titleId);
+
+        return rentalEntriesByTitleId;
+    }
+
+    public bool RentalEntryByMemberIdExist(int memberId)
+    {
+        var rentalEntriesByTitleId = GetUnreturnedRentalEntriesByMemberId(memberId);
+        if (rentalEntriesByTitleId != null)
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+
+    #endregion BoolMethods
 }

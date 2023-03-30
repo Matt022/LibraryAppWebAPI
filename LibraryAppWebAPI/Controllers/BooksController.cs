@@ -4,6 +4,7 @@ using LibraryAppWebAPI.Repository.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using LibraryAppWebAPI.Models.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
+using LibraryAppWebAPI.Repository;
 
 namespace LibraryAppWebAPI.Controllers
 {
@@ -13,10 +14,12 @@ namespace LibraryAppWebAPI.Controllers
     public class BooksController : ControllerBase
     {
         private readonly IBookRepository _bookRepository;
+        private readonly IRentalEntryRepository _rentalEntryRepository;
 
-        public BooksController(IBookRepository bookRepository)
+        public BooksController(IBookRepository bookRepository, IRentalEntryRepository rentalEntryRepository)
         {
             _bookRepository = bookRepository;
+            _rentalEntryRepository = rentalEntryRepository;
         }
 
         // GET: api/Books
@@ -113,7 +116,17 @@ namespace LibraryAppWebAPI.Controllers
                 book.ISBN = bookRequest.ISBN;
             };
 
-            _bookRepository.Update(book);
+            if (!_rentalEntryRepository.RentalEntryByTitleIdExist(id))
+            {
+                _bookRepository.Update(book);
+            }
+            else
+            {
+                ModelState.AddModelError("", $"This title was found in rentals. This title cannot be updated");
+                return StatusCode(500, ModelState);
+            }
+
+            
             return Ok($"Book with id {id} was successfully updated");
         }
 
@@ -122,13 +135,23 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [ProducesResponseType(500, Type = typeof(StatusCodes))]
         [SwaggerOperation(Summary = "Delete a book by Id", Tags = new[] { "Books" })]
         public IActionResult DeleteBook(int id)
         {
             if (!_bookRepository.BookExists(id))
                 return NotFound($"Book with id {id} does not exist");
 
-            _bookRepository.Delete(id);
+            if (!_rentalEntryRepository.RentalEntryByTitleIdExist(id))
+            {
+                _bookRepository.Delete(id);
+            }
+            else
+            {
+                ModelState.AddModelError("", $"This title was found in rentals. This title cannot be removed");
+                return StatusCode(500, ModelState);
+            }
+
             return Ok($"Book with id {id} was successfully deleted");
         }
     }

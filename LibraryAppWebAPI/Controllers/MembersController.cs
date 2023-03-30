@@ -15,11 +15,15 @@ namespace LibraryAppWebAPI.Controllers
     {
         private readonly IMemberRepository _memberRepository;
         private readonly IMessagingService _messagingService;
+        private readonly IRentalEntryRepository _rentalEntryRepository;
+        private readonly IQueueItemRepository _queueItemRepository;
 
-        public MembersController(IMemberRepository memberRepository, IMessagingService messagingService)
+        public MembersController(IMemberRepository memberRepository, IMessagingService messagingService, IRentalEntryRepository rentalEntryRepository, IQueueItemRepository queueItemRepository)
         {
             _memberRepository = memberRepository;
             _messagingService = messagingService;
+            _rentalEntryRepository = rentalEntryRepository;
+            _queueItemRepository = queueItemRepository;
         }
 
         // GET: api/Members
@@ -113,6 +117,18 @@ namespace LibraryAppWebAPI.Controllers
         {
             if (!_memberRepository.MemberExists(id))
                 return NotFound($"Member with id {id} does not exist");
+
+            if (_queueItemRepository.QueueItemByMemberIdExist(id))
+            {
+                ModelState.AddModelError("", $"Member with id {id} is in queue. This member cannot be removed");
+                return StatusCode(500, ModelState);
+            }
+            
+            if (_rentalEntryRepository.RentalEntryByMemberIdExist(id))
+            {
+                ModelState.AddModelError("", $"There are some rentals made by a member with id {id}. This member cannot be removed");
+                return StatusCode(500, ModelState);
+            }
 
             _memberRepository.Delete(id);
             return Ok($"Member with id {id} was successfully deleted");

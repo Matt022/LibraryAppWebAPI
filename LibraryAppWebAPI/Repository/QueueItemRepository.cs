@@ -144,6 +144,13 @@ public class QueueItemRepository : IQueueItemRepository
         return _context.QueueItems.Any(c => c.Id == id);
     }
 
+    public bool QueueItemByMemberIdExist(int memberId)
+    {
+        bool rentalEntriesByTitleId = _context.QueueItems.Any(e => e.MemberId == memberId);
+
+        return rentalEntriesByTitleId;
+    }
+
     public IEnumerable<QueueItem> Find(Expression<Func<QueueItem, bool>> expression)
     {
         return _context.QueueItems.Where(expression).Include(i => i.Title).Include(i => i.Member);

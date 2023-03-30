@@ -4,6 +4,7 @@ using LibraryAppWebAPI.Repository.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using LibraryAppWebAPI.Models.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
+using LibraryAppWebAPI.Repository;
 
 namespace LibraryAppWebAPI.Controllers
 {
@@ -13,10 +14,12 @@ namespace LibraryAppWebAPI.Controllers
     public class DvdsController : ControllerBase
     {
         private readonly IDvdRepository _dvdRepository;
+        private readonly IRentalEntryRepository _rentalEntryRepository;
 
-        public DvdsController(IDvdRepository dvdRepository)
+        public DvdsController(IDvdRepository dvdRepository, IRentalEntryRepository rentalEntryRepository)
         {
             _dvdRepository = dvdRepository;
+            _rentalEntryRepository = rentalEntryRepository;
         }
 
         // GET: api/Dvds
@@ -112,7 +115,16 @@ namespace LibraryAppWebAPI.Controllers
                 dvd.NumberOfMinutes = dvdRequest.NumberOfMinutes;
             }
 
-            _dvdRepository.Update(dvd);
+            if (!_rentalEntryRepository.RentalEntryByTitleIdExist(id))
+            {
+                _dvdRepository.Update(dvd);
+            }
+            else
+            {
+                ModelState.AddModelError("", $"This title was found in rentals. This title cannot be updated");
+                return StatusCode(500, ModelState);
+            }
+
             return Ok($"Dvd with id {id} was successfully updated");
         }
 
@@ -121,13 +133,23 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [ProducesResponseType(500, Type = typeof(StatusCodes))]
         [SwaggerOperation(Summary = "Delete a dvd by id", Tags = new[] { "Dvds" })]
         public IActionResult DeleteDvd(int id)
         {
             if (!_dvdRepository.DvdExists(id))
                 return NotFound($"Dvd with id {id} does not exist");
 
-            _dvdRepository.Delete(id);
+            if (!_rentalEntryRepository.RentalEntryByTitleIdExist(id))
+            {
+                _dvdRepository.Delete(id);
+            }
+            else
+            {
+                ModelState.AddModelError("", $"This title was found in rentals. This title cannot be removed");
+                return StatusCode(500, ModelState);
+            }
+
             return Ok($"Dvd with id {id} was successfully deleted");
         }
     }
