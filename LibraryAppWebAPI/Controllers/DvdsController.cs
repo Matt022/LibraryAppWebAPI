@@ -57,7 +57,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Create a dvd", Tags = new[] { "Dvds" })]
         public ActionResult<Dvd> CreateDvd([FromBody] DvdDto dvdRequest)
         {
@@ -66,8 +66,7 @@ namespace LibraryAppWebAPI.Controllers
 
             if (dvdRequest.AvailableCopies != dvdRequest.TotalAvailableCopies)
             {
-                ModelState.AddModelError("", "Available copies must be equal to total available copies");
-                return StatusCode(500, ModelState);
+                return Problem("Available copies must be equal to total available copies");
             }
 
             Dvd dvd = new();
@@ -89,7 +88,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Update a dvd", Tags = new[] { "Dvds" })]
         public IActionResult UpdateDvd(int id, [FromBody] DvdDto dvdRequest)
         {
@@ -101,8 +100,7 @@ namespace LibraryAppWebAPI.Controllers
 
             if (dvdRequest.AvailableCopies != dvdRequest.TotalAvailableCopies)
             {
-                ModelState.AddModelError("", "Available copies must be equal to total available copies");
-                return StatusCode(500, ModelState);
+                return Problem("Available copies must be equal to total available copies");
             }
 
             Dvd dvd = _dvdRepository.GetById(id);
@@ -121,8 +119,7 @@ namespace LibraryAppWebAPI.Controllers
             }
             else
             {
-                ModelState.AddModelError("", $"This title was found in rentals. This title cannot be updated");
-                return StatusCode(500, ModelState);
+                return Problem($"This title was found in rentals. This title cannot be updated");
             }
 
             return Ok($"Dvd with id {id} was successfully updated");
@@ -133,7 +130,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Delete a dvd by id", Tags = new[] { "Dvds" })]
         public IActionResult DeleteDvd(int id)
         {
@@ -146,8 +143,7 @@ namespace LibraryAppWebAPI.Controllers
             }
             else
             {
-                ModelState.AddModelError("", $"This title was found in rentals. This title cannot be removed");
-                return StatusCode(500, ModelState);
+                return Problem($"This title was found in rentals. This title cannot be removed");
             }
 
             return Ok($"Dvd with id {id} was successfully deleted");

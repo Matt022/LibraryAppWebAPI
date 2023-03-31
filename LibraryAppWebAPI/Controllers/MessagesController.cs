@@ -51,7 +51,6 @@ namespace LibraryAppWebAPI.Controllers
                 return NotFound($"Message with id {id} does not exist");
 
             Message message = _messageRepository.GetById(id);
-
             return message;
         }
 

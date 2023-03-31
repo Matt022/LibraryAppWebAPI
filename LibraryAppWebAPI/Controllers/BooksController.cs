@@ -4,7 +4,6 @@ using LibraryAppWebAPI.Repository.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using LibraryAppWebAPI.Models.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
-using LibraryAppWebAPI.Repository;
 
 namespace LibraryAppWebAPI.Controllers
 {
@@ -56,7 +55,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Create a book", Tags = new[] { "Books"})]
         public ActionResult<Book> CreateBook([FromBody] BookDto bookRequest)
         {
@@ -65,8 +64,7 @@ namespace LibraryAppWebAPI.Controllers
 
             if (bookRequest.AvailableCopies != bookRequest.TotalAvailableCopies)
             {
-                ModelState.AddModelError("", "Available copies must be equal to total available copies");
-                return StatusCode(500, ModelState);
+                return Problem("Available copies must be equal to total available copies");
             }
 
             Book book = new()
@@ -88,13 +86,13 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
+        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Update a book", Tags = new[] { "Books" })]
         public IActionResult UpdateBook(int id, [FromBody] BookDto bookRequest)
         {
             if (!_bookRepository.BookExists(id))
             {
-                ModelState.AddModelError("", $"Book with id {id} does not exist");
-                return StatusCode(404, ModelState);
+                return NotFound($"Book with id {id} does not exist");
             }
                 
             if (!ModelState.IsValid)
@@ -102,8 +100,7 @@ namespace LibraryAppWebAPI.Controllers
 
             if (bookRequest.AvailableCopies != bookRequest.TotalAvailableCopies)
             {
-                ModelState.AddModelError("", "Available copies must be equal to total available copies");
-                return StatusCode(500, ModelState);
+                return Problem("Available copies must be equal to total available copies");
             }
 
             Book book = _bookRepository.GetById(id);
@@ -122,11 +119,9 @@ namespace LibraryAppWebAPI.Controllers
             }
             else
             {
-                ModelState.AddModelError("", $"This title was found in rentals. This title cannot be updated");
-                return StatusCode(500, ModelState);
+                return Problem("This title was found in rentals. This title cannot be updated");
             }
 
-            
             return Ok($"Book with id {id} was successfully updated");
         }
 
@@ -135,7 +130,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Delete a book by Id", Tags = new[] { "Books" })]
         public IActionResult DeleteBook(int id)
         {
@@ -148,8 +143,7 @@ namespace LibraryAppWebAPI.Controllers
             }
             else
             {
-                ModelState.AddModelError("", $"This title was found in rentals. This title cannot be removed");
-                return StatusCode(500, ModelState);
+                return Problem($"This title was found in rentals. This title cannot be removed");
             }
 
             return Ok($"Book with id {id} was successfully deleted");

@@ -230,7 +230,7 @@ public class RentalEntryRepository : IRentalEntryRepository
     #region BoolMethods 
     public bool RentalEntryByTitleIdExist(int titleId)
     {
-        bool rentalEntriesByTitleId = _context.RentalEntries.Any(e => e.TitleId == titleId);
+        bool rentalEntriesByTitleId = _context.RentalEntries.Where(e => e.ReturnDate == null).Any(e => e.TitleId == titleId);
 
         return rentalEntriesByTitleId;
     }

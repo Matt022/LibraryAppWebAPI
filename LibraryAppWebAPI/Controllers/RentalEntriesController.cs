@@ -133,7 +133,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Create a rent or rent a title", Tags = new[] { "RentalEntries" })]
         public ActionResult<Member> RentTitle([FromBody] RentalEntryDto rentalEntryCreate)
         {
@@ -153,8 +153,7 @@ namespace LibraryAppWebAPI.Controllers
 
             if (!canRent)
             {
-                ModelState.AddModelError("", message);
-                return StatusCode(500, ModelState);
+                return Problem(message);
             } 
             else
             {
@@ -167,7 +166,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Return a title", Tags = new[] { "RentalEntries" })]
         public IActionResult ReturnTitle(int id, [FromBody] ReturnTitleDto returnTitle)
         {
@@ -185,8 +184,7 @@ namespace LibraryAppWebAPI.Controllers
 
             if (!canReturn)
             {
-                ModelState.AddModelError("", message);
-                return StatusCode(500, ModelState);
+                return Problem(message);
             } else
             {
                 return Ok(message);
@@ -198,7 +196,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Prolong a title", Tags = new[] { "RentalEntries" })]
         public IActionResult ProlongTitle(int id, [FromBody] ReturnTitleDto prolongTitle)
         {
@@ -216,8 +214,7 @@ namespace LibraryAppWebAPI.Controllers
 
             if (!canProlong)
             {
-                ModelState.AddModelError("", message);
-                return StatusCode(500, ModelState);
+                return Problem(message);
             }
             else
             {
@@ -230,7 +227,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(StatusCodes))]
+        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Update a rental entry", Tags = new[] { "RentalEntries" })]
         public IActionResult UpdateRentalEntry(int id, [FromBody] RentalEntryDto rentalEntryUpdate)
         {
