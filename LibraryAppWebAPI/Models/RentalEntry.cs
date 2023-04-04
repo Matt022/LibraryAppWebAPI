@@ -16,6 +16,8 @@ public class RentalEntry : EntityBase
 
     public DateTime? ReturnDate { get; set; }
 
+    public DateTime? MaxReturnDate { get; set; }
+
     public Title? Title { get; set; }
     [Required]
     public int TitleId { get; set; }

@@ -5,6 +5,7 @@ using LibraryAppWebAPI.Repository.Interfaces;
 using LibraryAppWebAPI.Service.IServices;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Swashbuckle.AspNetCore.Annotations;
+using LibraryAppWebAPI.Base;
 
 namespace LibraryAppWebAPI.Controllers
 {
@@ -175,7 +176,7 @@ namespace LibraryAppWebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            Dictionary<bool, string> dictionary = _rentalEntryService.ReturnTitleWithValidation(id: id, memberId: returnTitle.MemberId, returnTitle: returnTitle, message: message);
+            Dictionary<bool, string> dictionary = _rentalEntryService.ReturnTitleWithValidation(id, returnTitle.MemberId, returnTitle, message);
             foreach (KeyValuePair<bool, string> keyValues in dictionary)
             {
                 canReturn = keyValues.Key;
@@ -185,7 +186,8 @@ namespace LibraryAppWebAPI.Controllers
             if (!canReturn)
             {
                 return Problem(message);
-            } else
+            } 
+            else
             {
                 return Ok(message);
             }
@@ -244,6 +246,8 @@ namespace LibraryAppWebAPI.Controllers
                 rentalEntryReq.Member = member;
                 rentalEntryReq.TitleId = rentalEntryUpdate.TitleId;
                 rentalEntryReq.RentedDate = DateTime.UtcNow;
+                Title title = _rentalEntryService.GetBookOrDvd(rentalEntryReq.TitleId);
+                rentalEntryReq.MaxReturnDate = title is Book ? rentalEntryReq.RentedDate.AddDays(21) : rentalEntryReq.RentedDate.AddDays(7);
             }
 
             _rentalEntryRepository.Update(rentalEntryReq);

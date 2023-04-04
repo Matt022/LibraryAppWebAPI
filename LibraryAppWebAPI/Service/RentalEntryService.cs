@@ -121,7 +121,8 @@ public class RentalEntryService : IRentalEntryService
             rentalEntryReq.Member = member;
             rentalEntryReq.TitleId = rentalEntryCreate.TitleId;
             rentalEntryReq.RentedDate = DateTime.UtcNow;
-            rentalEntryReq.TitleType = title is Book ? eTitleType.Book : eTitleType.Dvd; 
+            rentalEntryReq.TitleType = title is Book ? eTitleType.Book : eTitleType.Dvd;
+            rentalEntryReq.MaxReturnDate = title is Book ? rentalEntryReq.RentedDate.AddDays(21) : rentalEntryReq.RentedDate.AddDays(7);
         }
 
         if (rentedTitles.Any(t => t.TitleId == rentalEntryCreate.TitleId) && title.AvailableCopies == 0)
@@ -306,6 +307,8 @@ public class RentalEntryService : IRentalEntryService
             {
                 rentalEntryProlong.TimesProlongued++;
                 rentalEntryProlong.RentedDate = DateTime.Now;
+                Title title = GetBookOrDvd(rentalEntryProlong.TitleId);
+                rentalEntryProlong.MaxReturnDate = title is Book ? rentalEntryProlong.RentedDate.AddDays(21) : rentalEntryProlong.RentedDate.AddDays(7);
             }
             else
             {

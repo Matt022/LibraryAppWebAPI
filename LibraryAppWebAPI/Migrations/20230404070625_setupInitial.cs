@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LibraryAppWebAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class setup : Migration
+    public partial class setupInitial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -107,6 +107,7 @@ namespace LibraryAppWebAPI.Migrations
                     MemberId = table.Column<int>(type: "int", nullable: false),
                     RentedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    MaxReturnDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     TitleId = table.Column<int>(type: "int", nullable: false),
                     TimesProlongued = table.Column<int>(type: "int", nullable: false),
                     TitleType = table.Column<int>(type: "int", nullable: false)
