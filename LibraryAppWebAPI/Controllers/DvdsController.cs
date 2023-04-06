@@ -75,7 +75,7 @@ namespace LibraryAppWebAPI.Controllers
                 dvd.Name = dvdRequest.Name;
                 dvd.AvailableCopies = dvdRequest.AvailableCopies;
                 dvd.TotalAvailableCopies = dvdRequest.TotalAvailableCopies;
-                dvd.NumberOfChapters = dvdRequest.NumberOfChapters;
+                dvd.PublishYear = dvdRequest.PublishYear;
                 dvd.NumberOfMinutes = dvdRequest.NumberOfMinutes;
             }
 
@@ -109,7 +109,7 @@ namespace LibraryAppWebAPI.Controllers
                 dvd.Name = dvdRequest.Name;
                 dvd.AvailableCopies = dvdRequest.AvailableCopies;
                 dvd.TotalAvailableCopies = dvdRequest.TotalAvailableCopies;
-                dvd.NumberOfChapters = dvdRequest.NumberOfChapters;
+                dvd.PublishYear = dvdRequest.PublishYear;
                 dvd.NumberOfMinutes = dvdRequest.NumberOfMinutes;
             }
 

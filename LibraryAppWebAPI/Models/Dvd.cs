@@ -6,13 +6,13 @@ namespace LibraryAppWebAPI.Models;
 public class Dvd : Title
 {
     [Required]
-    public int NumberOfChapters { get; set; }
+    public int PublishYear { get; set; }
 
     [Required]
     public int NumberOfMinutes { get; set; }
 
     public override string ToString()
     {
-        return $"Name: {Name} - Author: {Author} - Number of chapters: {NumberOfChapters} - Length in minutes: {NumberOfMinutes} - Available copies: {AvailableCopies}";
+        return $"Name: {Name} - Author: {Author} - Number of chapters: {PublishYear} - Length in minutes: {NumberOfMinutes} - Available copies: {AvailableCopies}";
     }
 }

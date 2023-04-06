@@ -5,7 +5,7 @@ namespace LibraryAppWebAPI.Models.DTOs;
 public class DvdDto : TitleDto
 {
     [Required]
-    public int NumberOfChapters { get; set; }
+    public int PublishYear { get; set; }
 
     [Required]
     public int NumberOfMinutes { get; set; }

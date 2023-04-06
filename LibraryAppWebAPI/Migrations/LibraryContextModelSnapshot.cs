@@ -199,10 +199,10 @@ namespace LibraryAppWebAPI.Migrations
                 {
                     b.HasBaseType("LibraryAppWebAPI.Base.Title");
 
-                    b.Property<int>("NumberOfChapters")
+                    b.Property<int>("NumberOfMinutes")
                         .HasColumnType("int");
 
-                    b.Property<int>("NumberOfMinutes")
+                    b.Property<int>("PublishYear")
                         .HasColumnType("int");
 
                     b.HasDiscriminator().HasValue("Dvd");

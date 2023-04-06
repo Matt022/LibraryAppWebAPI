@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LibraryAppWebAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class setupInitial : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -40,7 +40,7 @@ namespace LibraryAppWebAPI.Migrations
                     Discriminator = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NumberOfPages = table.Column<int>(type: "int", nullable: true),
                     ISBN = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NumberOfChapters = table.Column<int>(type: "int", nullable: true),
+                    PublishYear = table.Column<int>(type: "int", nullable: true),
                     NumberOfMinutes = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>

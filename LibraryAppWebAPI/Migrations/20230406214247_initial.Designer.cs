@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryAppWebAPI.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20230404070625_setupInitial")]
-    partial class setupInitial
+    [Migration("20230406214247_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -202,10 +202,10 @@ namespace LibraryAppWebAPI.Migrations
                 {
                     b.HasBaseType("LibraryAppWebAPI.Base.Title");
 
-                    b.Property<int>("NumberOfChapters")
+                    b.Property<int>("NumberOfMinutes")
                         .HasColumnType("int");
 
-                    b.Property<int>("NumberOfMinutes")
+                    b.Property<int>("PublishYear")
                         .HasColumnType("int");
 
                     b.HasDiscriminator().HasValue("Dvd");
