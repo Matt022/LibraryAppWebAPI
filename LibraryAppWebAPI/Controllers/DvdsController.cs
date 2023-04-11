@@ -64,16 +64,11 @@ namespace LibraryAppWebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (dvdRequest.AvailableCopies != dvdRequest.TotalAvailableCopies)
-            {
-                return Problem("Available copies must be equal to total available copies");
-            }
-
             Dvd dvd = new();
             {
                 dvd.Author = dvdRequest.Author;
                 dvd.Name = dvdRequest.Name;
-                dvd.AvailableCopies = dvdRequest.AvailableCopies;
+                dvd.AvailableCopies = dvdRequest.TotalAvailableCopies;
                 dvd.TotalAvailableCopies = dvdRequest.TotalAvailableCopies;
                 dvd.PublishYear = dvdRequest.PublishYear;
                 dvd.NumberOfMinutes = dvdRequest.NumberOfMinutes;
@@ -98,16 +93,11 @@ namespace LibraryAppWebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (dvdRequest.AvailableCopies != dvdRequest.TotalAvailableCopies)
-            {
-                return Problem("Available copies must be equal to total available copies");
-            }
-
             Dvd dvd = _dvdRepository.GetById(id);
             {
                 dvd.Author = dvdRequest.Author;
                 dvd.Name = dvdRequest.Name;
-                dvd.AvailableCopies = dvdRequest.AvailableCopies;
+                dvd.AvailableCopies = dvdRequest.TotalAvailableCopies;
                 dvd.TotalAvailableCopies = dvdRequest.TotalAvailableCopies;
                 dvd.PublishYear = dvdRequest.PublishYear;
                 dvd.NumberOfMinutes = dvdRequest.NumberOfMinutes;

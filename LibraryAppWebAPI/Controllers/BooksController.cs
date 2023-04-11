@@ -62,16 +62,11 @@ namespace LibraryAppWebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (bookRequest.AvailableCopies != bookRequest.TotalAvailableCopies)
-            {
-                return Problem("Available copies must be equal to total available copies");
-            }
-
             Book book = new()
             {
                 Author = bookRequest.Author,
                 Name = bookRequest.Name,
-                AvailableCopies = bookRequest.AvailableCopies,
+                AvailableCopies = bookRequest.TotalAvailableCopies,
                 TotalAvailableCopies = bookRequest.TotalAvailableCopies,
                 NumberOfPages = bookRequest.NumberOfPages,
                 ISBN = bookRequest.ISBN
@@ -98,16 +93,13 @@ namespace LibraryAppWebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (bookRequest.AvailableCopies != bookRequest.TotalAvailableCopies)
-            {
-                return Problem("Available copies must be equal to total available copies");
-            }
+            
 
             Book book = _bookRepository.GetById(id);
             {
                 book.Author = bookRequest.Author;
                 book.Name = bookRequest.Name;
-                book.AvailableCopies = bookRequest.AvailableCopies;
+                book.AvailableCopies = bookRequest.TotalAvailableCopies;
                 book.TotalAvailableCopies = bookRequest.TotalAvailableCopies;
                 book.NumberOfPages = bookRequest.NumberOfPages;
                 book.ISBN = bookRequest.ISBN;

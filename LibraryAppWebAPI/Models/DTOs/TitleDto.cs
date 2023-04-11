@@ -11,8 +11,5 @@ public class TitleDto
     public string Name { get; set; }
 
     [Required]
-    public int AvailableCopies { get; set; }
-
-    [Required]
     public int TotalAvailableCopies { get; set; }
 }
