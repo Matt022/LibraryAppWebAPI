@@ -20,6 +20,7 @@ public class QueueItemRepository : IQueueItemRepository
         _memberRepository = memberRepository;
         _bookRepository = bookRepository;
         _dvdRepository = dvdRepository;
+        TurnOffIdentityCache();
     }
 
     public void TurnOffIdentityCache()

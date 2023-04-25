@@ -23,6 +23,7 @@ public class RentalEntryRepository : IRentalEntryRepository
         _memberRepository = memberRepository;
         _bookRepository = bookRepository;
         _dvdRepository = dvdRepository;
+        TurnOffIdentityCache();
     }
 
     public void TurnOffIdentityCache()
@@ -94,13 +95,42 @@ public class RentalEntryRepository : IRentalEntryRepository
 
     public List<RentalEntry> GetRentalEntriesPastDue()
     {
-        IQueryable<RentalEntry> notReturnedEntries = _context.RentalEntries.Where(e => e.ReturnDate == null);
+        List<RentalEntry> notReturnedEntries = _context.RentalEntries.Where(e => e.ReturnDate == null).ToList();
 
-        List<RentalEntry> result = new();
+        if (notReturnedEntries == null)
         {
-            foreach (RentalEntry entry in notReturnedEntries)
+            List<RentalEntry> result = new();
             {
-                if (IsEntryPastDue(entry))
+                foreach (RentalEntry entry in notReturnedEntries)
+                {
+                    if (IsEntryPastDue(entry))
+                    {
+                        Member member = _memberRepository.GetById(entry.MemberId);
+                        entry.Member = member;
+                        Title title = GetBookOrDvd(entry.TitleId);
+                        entry.Title = title;
+                        entry.TitleType = title is Book ? eTitleType.Book : eTitleType.Dvd;
+                        result.Add(entry);
+                    }
+                }
+            }
+
+            return result;
+        } else
+        {
+            return null;
+        }
+    }
+
+    public List<RentalEntry> GetUnreturnedRentalEntries()
+    {
+        List<RentalEntry> notReturnedEntries = _context.RentalEntries.Where(e => e.ReturnDate == null).ToList();
+
+        if (notReturnedEntries.Any())
+        {
+            List<RentalEntry> result = new();
+            {
+                foreach (RentalEntry entry in notReturnedEntries)
                 {
                     Member member = _memberRepository.GetById(entry.MemberId);
                     entry.Member = member;
@@ -110,49 +140,39 @@ public class RentalEntryRepository : IRentalEntryRepository
                     result.Add(entry);
                 }
             }
-        }
-
-        return result;
-    }
-
-    public List<RentalEntry> GetUnreturnedRentalEntries()
-    {
-        IQueryable<RentalEntry> notReturnedEntries = _context.RentalEntries.Where(e => e.ReturnDate == null);
-
-        List<RentalEntry> result = new();
+            return result;
+        } 
+        else
         {
-            foreach (RentalEntry entry in notReturnedEntries)
-            {
-                Member member = _memberRepository.GetById(entry.MemberId);
-                entry.Member = member;
-                Title title = GetBookOrDvd(entry.TitleId);
-                entry.Title = title;
-                entry.TitleType = title is Book ? eTitleType.Book : eTitleType.Dvd;
-                result.Add(entry);
-            }
+            return null;
         }
 
-        return result;
     }
 
     public List<RentalEntry> GetUnreturnedRentalEntriesByMemberId(int memberId)
     {
-        IQueryable<RentalEntry> notReturnedEntriesByMemberId = _context.RentalEntries.Where(e => e.ReturnDate == null && e.MemberId == memberId);
+        List<RentalEntry> notReturnedEntriesByMemberId = _context.RentalEntries.Where(e => e.ReturnDate == null && e.MemberId == memberId).ToList();
 
-        List<RentalEntry> result = new();
+        if (notReturnedEntriesByMemberId.Any())
         {
-            foreach (RentalEntry entry in notReturnedEntriesByMemberId)
+            List<RentalEntry> result = new();
             {
-                Member member = _memberRepository.GetById(entry.MemberId);
-                entry.Member = member;
-                Title title = GetBookOrDvd(entry.TitleId);
-                entry.Title = title;
-                entry.TitleType = title is Book ? eTitleType.Book : eTitleType.Dvd;
-                result.Add(entry);
+                foreach (RentalEntry entry in notReturnedEntriesByMemberId)
+                {
+                    Member member = _memberRepository.GetById(entry.MemberId);
+                    entry.Member = member;
+                    Title title = GetBookOrDvd(entry.TitleId);
+                    entry.Title = title;
+                    entry.TitleType = title is Book ? eTitleType.Book : eTitleType.Dvd;
+                    result.Add(entry);
+                }
             }
-        }
 
-        return result;
+            return result;
+        } else
+        {
+            return null;
+        }
     }
     #endregion GetMethods
 
@@ -237,14 +257,9 @@ public class RentalEntryRepository : IRentalEntryRepository
 
     public bool RentalEntryByMemberIdExist(int memberId)
     {
-        var rentalEntriesByTitleId = GetUnreturnedRentalEntriesByMemberId(memberId);
-        if (rentalEntriesByTitleId != null)
-        {
-            return true;
-        } else
-        {
-            return false;
-        }
+        bool rentalEntriesByTitleId = _context.RentalEntries.Where(e => e.ReturnDate == null).Any(e => e.MemberId == memberId);
+
+        return rentalEntriesByTitleId;
     }
 
     #endregion BoolMethods

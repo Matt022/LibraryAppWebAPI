@@ -11,6 +11,7 @@ public class MemberRepository : IMemberRepository
     public MemberRepository(LibraryContext context)
     {
         _context = context;
+        TurnOffIdentityCache();
     }
 
     public void TurnOffIdentityCache()
@@ -44,7 +45,7 @@ public class MemberRepository : IMemberRepository
 
     public Member GetById(int id)
     {
-        return _context.Members.FirstOrDefault(x => x.Id == id);
+        return _context.Members.SingleOrDefault(x => x.Id == id);
     }
 
     public void Update(Member entity)

@@ -11,6 +11,7 @@ public class DvdRepository : IDvdRepository
     public DvdRepository(LibraryContext context)
     {
         _context = context;
+        TurnOffIdentityCache();
     }
 
     public void TurnOffIdentityCache()

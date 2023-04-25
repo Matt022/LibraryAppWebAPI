@@ -15,6 +15,7 @@ public class MessageRepository : IMessageRepository
     {
         _context = context;
         _memberRepository = memberRepository;
+        TurnOffIdentityCache();
     }
 
     public void TurnOffIdentityCache()

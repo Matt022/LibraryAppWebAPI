@@ -11,6 +11,7 @@ public class BookRepository : IBookRepository
     public BookRepository(LibraryContext context)
     {
         _context = context;
+        TurnOffIdentityCache();
     }
 
     public void TurnOffIdentityCache()

@@ -50,9 +50,13 @@ namespace LibraryAppWebAPI.Controllers
         {
             IEnumerable<RentalEntry> rentalEntries = _rentalEntryRepository.GetRentalEntriesPastDue();
             if (rentalEntries == null || !rentalEntries.Any())
+            {
                 return NotFound("There is no rental entry past due");
 
-            return Ok(rentalEntries);
+            } else
+            {
+                return Ok(rentalEntries);
+            }
         }
 
         // GET: api/RentalEntries/PastDue
@@ -60,9 +64,9 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
         [SwaggerOperation(Summary = "Get all unreturned rental entries", Tags = new[] { "RentalEntries" })]
-        public ActionResult<IEnumerable<RentalEntry>> GetUnreturnedRentalEntries()
+        public ActionResult<List<RentalEntry>> GetUnreturnedRentalEntries()
         {
-            IEnumerable<RentalEntry> rentalEntries = _rentalEntryRepository.GetUnreturnedRentalEntries();
+            List<RentalEntry> rentalEntries = _rentalEntryRepository.GetUnreturnedRentalEntries();
             if (rentalEntries == null || !rentalEntries.Any())
                 return NotFound("There is no unreturned rental entries");
 
@@ -74,7 +78,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
         [SwaggerOperation(Summary = "Get all unreturned rental entries by member Id", Tags = new[] { "RentalEntries" })]
-        public ActionResult<IEnumerable<RentalEntry>> GetUnreturnedRentalEntriesByMemberId(int memberId)
+        public ActionResult<List<RentalEntry>> GetUnreturnedRentalEntriesByMemberId(int memberId)
         {
             Member member = null;
             if (!_memberRepository.MemberExists(memberId))
@@ -84,13 +88,13 @@ namespace LibraryAppWebAPI.Controllers
             else
             {
                 member = _memberRepository.GetById(memberId);
+                List<RentalEntry> rentalEntries = _rentalEntryRepository.GetUnreturnedRentalEntriesByMemberId(memberId);
+
+                if (rentalEntries == null || !rentalEntries.Any())
+                    return NotFound($"There is no unreturned rental entries for {member.FullName()}");
+
+                return Ok(rentalEntries);
             }
-            IEnumerable<RentalEntry> rentalEntries = _rentalEntryRepository.GetUnreturnedRentalEntriesByMemberId(memberId);
-
-            if (rentalEntries == null || !rentalEntries.Any())
-                return NotFound($"There is no unreturned rental entries for {member.FullName()}");
-
-            return Ok(rentalEntries);
         }
 
         // GET: api/RentalEntries/5
@@ -101,10 +105,10 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get rental entry by Id", Tags = new[] { "RentalEntries" })]
         public ActionResult<RentalEntry> GetRentalEntry(int id)
         {
-            RentalEntry rentalEntry = _rentalEntryRepository.GetById(id);
-
             if (!_rentalEntryRepository.RentalEntryExists(id))
                 return NotFound($"Rental entry with id {id} does not exist");
+            RentalEntry rentalEntry = _rentalEntryRepository.GetById(id);
+
 
             return rentalEntry;
         }
