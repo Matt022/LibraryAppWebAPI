@@ -113,7 +113,6 @@ public class RentalEntryService : IRentalEntryService
         Member member = _memberRepository.GetById(rentalEntryCreate.MemberId); 
         Dictionary<bool, string> dictionary = new();
 
-
         Title title = GetBookOrDvd(rentalEntryCreate.TitleId);
         RentalEntry rentalEntryReq = new();
         {
@@ -159,6 +158,7 @@ public class RentalEntryService : IRentalEntryService
                 queueItem.Member = member;
 
             }
+
             queueItem.TimeAdded = DateTime.UtcNow;
             _queueItemRepository.Create(queueItem);
             _messagingService.SendMessage(member.Id, messageSubject, messageContext);

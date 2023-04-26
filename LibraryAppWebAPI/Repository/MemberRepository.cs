@@ -21,7 +21,12 @@ public class MemberRepository : IMemberRepository
 
     public IEnumerable<Member> GetAll()
     {
-        return _context.Members.ToList();
+        var members = _context.Members.ToList();
+        foreach (var member in members)
+        {
+            member.DateOfBirth = member.DateOfBirth.Date;
+        }
+        return members;
     }
 
     public Member Create(Member entity)
