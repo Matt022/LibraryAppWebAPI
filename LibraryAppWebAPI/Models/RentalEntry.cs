@@ -27,9 +27,4 @@ public class RentalEntry : EntityBase
     public bool IsReturned => ReturnDate is not null;
 
     public eTitleType TitleType { get; set; }
-
-    public override string ToString()
-    {
-        return $"{Title.Name} - {Title.Author} - Rented on: {RentedDate.ToShortDateString()} - Rented by: {Member.FirstName} {Member.LastName} - Returned: {(!IsReturned ? "NOT RETURNED" : ReturnDate.Value.ToShortDateString())} - Times prolongued: {TimesProlongued}";
-    }
 }

@@ -14,11 +14,6 @@ public class Member : EntityBase
     [Required]
     public DateTime DateOfBirth { get; set; }
 
-    public override string ToString()
-    {
-        return $"{Id}.| {FirstName} {LastName} | Date of Birth: {DateOfBirth} - Personal Id: {PersonalId}";
-    }
-
     public string FullName()
     {
         return $"{FirstName} {LastName}";

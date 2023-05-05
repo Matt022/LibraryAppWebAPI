@@ -19,9 +19,4 @@ public class QueueItem : EntityBase
 
     [Required]
     public bool IsResolved { get; set; }
-
-    public override string ToString()
-    {
-        return $"MemberId: {MemberId} Title: {Title.Name} - Member: {Member.FirstName} {Member.LastName} - IsResolved: {this.IsResolved}";
-    }
 }
