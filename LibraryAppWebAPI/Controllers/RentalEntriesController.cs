@@ -227,50 +227,5 @@ namespace LibraryAppWebAPI.Controllers
                 return Ok(message);
             }
         }
-
-        // PUT: api/RentalEntries/5
-        [HttpPut("{id}")]
-        [ProducesResponseType(200, Type = typeof(OkResult))]
-        [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
-        [SwaggerOperation(Summary = "Update a rental entry", Tags = new[] { "RentalEntries" })]
-        public IActionResult UpdateRentalEntry(int id, [FromBody] RentalEntryDto rentalEntryUpdate)
-        {
-            if (!_rentalEntryRepository.RentalEntryExists(id))
-                return NotFound($"Rental entry with id {id} was not found");
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            RentalEntry rentalEntryReq = _rentalEntryRepository.GetById(id);
-            {
-                rentalEntryReq.MemberId = rentalEntryUpdate.MemberId;
-                Member member = _memberRepository.GetById(rentalEntryUpdate.MemberId);
-                rentalEntryReq.Member = member;
-                rentalEntryReq.TitleId = rentalEntryUpdate.TitleId;
-                rentalEntryReq.RentedDate = DateTime.UtcNow;
-                Title title = _rentalEntryService.GetBookOrDvd(rentalEntryReq.TitleId);
-                rentalEntryReq.MaxReturnDate = title is Book ? rentalEntryReq.RentedDate.AddDays(21) : rentalEntryReq.RentedDate.AddDays(7);
-            }
-
-            _rentalEntryRepository.Update(rentalEntryReq);
-            return Ok($"Rental entry with id {id} was successfully updated");
-        }
-
-        // DELETE: api/RentalEntries/5
-        [HttpDelete("{id}")]
-        [ProducesResponseType(200, Type = typeof(OkResult))]
-        [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Delete a rental entry", Tags = new[] { "RentalEntries" })]
-        public IActionResult DeleteRentalEntry(int id)
-        {
-            if (!_rentalEntryRepository.RentalEntryExists(id))
-                return NotFound($"Rental entry with id {id} was not found");
-
-            _rentalEntryRepository.Delete(id);
-            return Ok($"Rental entry with id {id} was successfully deleted");
-        }
     }
 }
