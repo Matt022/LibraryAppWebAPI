@@ -97,22 +97,6 @@ namespace LibraryAppWebAPI.Controllers
             }
         }
 
-        // GET: api/RentalEntries/5
-        [HttpGet("{id}")]
-        [ProducesResponseType(200, Type = typeof(RentalEntry))]
-        [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get rental entry by Id", Tags = new[] { "RentalEntries" })]
-        public ActionResult<RentalEntry> GetRentalEntry(int id)
-        {
-            if (!_rentalEntryRepository.RentalEntryExists(id))
-                return NotFound($"Rental entry with id {id} does not exist");
-            RentalEntry rentalEntry = _rentalEntryRepository.GetById(id);
-
-
-            return rentalEntry;
-        }
-
         // POST: api/RentalEntries
         [HttpPost]
         [ProducesResponseType(200, Type = typeof(OkResult))]
