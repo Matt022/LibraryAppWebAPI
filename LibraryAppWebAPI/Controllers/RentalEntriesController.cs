@@ -113,26 +113,6 @@ namespace LibraryAppWebAPI.Controllers
             return rentalEntry;
         }
 
-        // GET: api/RentalEntries/Member/5
-        [HttpGet("Member/{id}")]
-        [ProducesResponseType(200, Type = typeof(OkResult))]
-        [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get all rental entries by member Id", Tags = new[] { "RentalEntries" })]
-        public ActionResult<IEnumerable<RentalEntry>> GetRentalEntryByMemberId(int id)
-        {
-            Member member = _memberRepository.GetById(id);
-            if (member == null)
-                return NotFound($"Member with id {id} does not exist");
-
-            List<RentalEntry> rentalEntries = _rentalEntryRepository.GetAllRentalEntriesByMemberId(id);
-
-            if (rentalEntries == null)
-                return NotFound($"No rental entries for {member.FullName}");
-
-            return rentalEntries.ToList();
-        }
-
         // POST: api/RentalEntries
         [HttpPost]
         [ProducesResponseType(200, Type = typeof(OkResult))]
