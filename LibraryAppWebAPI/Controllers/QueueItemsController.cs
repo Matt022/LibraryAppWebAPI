@@ -41,46 +41,6 @@ namespace LibraryAppWebAPI.Controllers
             return Ok(queueItems);
         }
 
-        // GET: api/QueueItems/5
-        [HttpGet("{id}")]
-        [ProducesResponseType(200, Type = typeof(QueueItem))]
-        [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get a queue item by id", Tags = new[] { "QueueItems" })]
-        public ActionResult<QueueItem> GetQueueItem(int id)
-        {
-            QueueItem queueItem = _queueItemRepository.GetById(id);
-
-            if (!_queueItemRepository.QueueItemExists(id))
-                return NotFound($"Queue item with id {id} does not exist");
-
-            return queueItem;
-        }
-
-        // GET: api/QueueItems/5
-        [HttpGet("Title/{titleId}")]
-        [ProducesResponseType(200, Type = typeof(QueueItem))]
-        [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get all queue items by title id", Tags = new[] { "QueueItems" })]
-        public ActionResult<List<QueueItem>> GetAllQueueItemsByTitle(int titleId)
-        {
-            List<QueueItem> queueItems = _queueItemRepository.GetAllQueueByTitleId(titleId);
-            Title title = _queueItemRepository.GetBookOrDvd(titleId);
-            if (_queueItemRepository.GetBookOrDvd(titleId) == null)
-            {
-                return NotFound($"Title with id {titleId} does not exist");
-            }
-            else if(queueItems == null)
-            {
-                return NotFound($"Queue items for title {title.Name} was not found");
-            }
-            else
-            {
-                return queueItems;
-            }
-        }
-
         [HttpGet("Member/{memberId}")]
         [ProducesResponseType(200, Type = typeof(QueueItem))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
