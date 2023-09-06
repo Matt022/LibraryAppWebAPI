@@ -5,7 +5,6 @@ using LibraryAppWebAPI.Repository.Interfaces;
 using LibraryAppWebAPI.Service.IServices;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Swashbuckle.AspNetCore.Annotations;
-using LibraryAppWebAPI.Base;
 
 namespace LibraryAppWebAPI.Controllers
 {

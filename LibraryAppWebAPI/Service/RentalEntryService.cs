@@ -46,7 +46,6 @@ public class RentalEntryService : IRentalEntryService
         _queueService = queueService;
         _messagingService = messagingService;
 
-
         InitializeConstants();
         InitializeEventSubscriptions();
     }

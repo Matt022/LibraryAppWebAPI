@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using LibraryAppWebAPI.Models;
-using LibraryAppWebAPI.Models.DTOs;
 using LibraryAppWebAPI.Repository.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
-using LibraryAppWebAPI.Base;
 using LibraryAppWebAPI.Service.IServices;
 using Swashbuckle.AspNetCore.Annotations;
 
