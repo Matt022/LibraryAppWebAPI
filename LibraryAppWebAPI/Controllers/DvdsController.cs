@@ -57,7 +57,6 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Create a dvd", Tags = new[] { "Dvds" })]
         public ActionResult<Dvd> CreateDvd([FromBody] DvdDto dvdRequest)
         {

@@ -2,7 +2,6 @@
 using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Repository.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
-using LibraryAppWebAPI.Service.IServices;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace LibraryAppWebAPI.Controllers
@@ -14,15 +13,12 @@ namespace LibraryAppWebAPI.Controllers
     {
         private readonly IQueueItemRepository _queueItemRepository;
         private readonly IMemberRepository _memberRepository;
-        private readonly IRentalEntryService _rentalEntryService;
 
         public QueueItemsController( IQueueItemRepository queueItemRepository, 
-            IMemberRepository memberRepository,
-            IRentalEntryService rentalEntryService)
+            IMemberRepository memberRepository)
         {
             _queueItemRepository = queueItemRepository;
             _memberRepository = memberRepository;
-            _rentalEntryService = rentalEntryService;
         }
 
         // GET: api/QueueItems

@@ -55,7 +55,6 @@ namespace LibraryAppWebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Create a book", Tags = new[] { "Books"})]
         public ActionResult<Book> CreateBook([FromBody] BookDto bookRequest)
         {
@@ -119,7 +118,6 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Delete a book by Id", Tags = new[] { "Books" })]
         public IActionResult DeleteBook(int id)
         {
