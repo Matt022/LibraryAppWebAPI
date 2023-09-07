@@ -101,7 +101,6 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Create a rent or rent a title", Tags = new[] { "RentalEntries" })]
         public ActionResult<Member> RentTitle([FromBody] RentalEntryDto rentalEntryCreate)
         {
@@ -121,7 +120,7 @@ namespace LibraryAppWebAPI.Controllers
 
             if (!canRent)
             {
-                return Problem(message);
+                return BadRequest(message);
             } 
             else
             {
@@ -134,7 +133,6 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Return a title", Tags = new[] { "RentalEntries" })]
         public IActionResult ReturnTitle(int id, [FromBody] ReturnTitleDto returnTitle)
         {
@@ -152,7 +150,7 @@ namespace LibraryAppWebAPI.Controllers
 
             if (!canReturn)
             {
-                return Problem(message);
+                return BadRequest(message);
             } 
             else
             {
@@ -165,7 +163,6 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Prolong a title", Tags = new[] { "RentalEntries" })]
         public IActionResult ProlongTitle(int id, [FromBody] ReturnTitleDto prolongTitle)
         {
@@ -183,7 +180,7 @@ namespace LibraryAppWebAPI.Controllers
 
             if (!canProlong)
             {
-                return Problem(message);
+                return BadRequest(message);
             }
             else
             {

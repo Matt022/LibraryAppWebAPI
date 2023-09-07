@@ -5,6 +5,7 @@ using LibraryAppWebAPI.Service;
 using LibraryAppWebAPI.Service.IServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Net;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 {
@@ -43,6 +44,11 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
                    .AllowAnyHeader()
                    .AllowAnyMethod();
         });
+    });
+
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.KnownProxies.Add(IPAddress.Parse("127.0.0.1"));
     });
 }
 

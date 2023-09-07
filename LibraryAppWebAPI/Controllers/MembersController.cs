@@ -112,7 +112,6 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Delete a member by Id", Tags = new[] { "Members" })]
         public IActionResult DeleteMember(int id)
         {
@@ -121,12 +120,12 @@ namespace LibraryAppWebAPI.Controllers
 
             if (_queueItemRepository.QueueItemByMemberIdExist(id))
             {
-                return Problem($"Member with id {id} is in queue. This member cannot be removed");
+                return BadRequest($"Member with id {id} is in queue. This member cannot be removed");
             }
             
             if (_rentalEntryRepository.RentalEntryByMemberIdExist(id))
             {
-                return Problem($"There are some rentals made by a member with id {id}. This member cannot be removed");
+                return BadRequest($"There are some rentals made by a member with id {id}. This member cannot be removed");
             }
 
             _memberRepository.Delete(id);

@@ -81,7 +81,6 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Update a book", Tags = new[] { "Books" })]
         public IActionResult UpdateBook(int id, [FromBody] BookDto bookRequest)
         {
@@ -92,8 +91,6 @@ namespace LibraryAppWebAPI.Controllers
                 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
-            
 
             Book book = _bookRepository.GetById(id);
             {
@@ -111,7 +108,7 @@ namespace LibraryAppWebAPI.Controllers
             }
             else
             {
-                return Problem("This title was found in rentals. This title cannot be updated");
+                return BadRequest("This title was found in rentals. This title cannot be updated");
             }
 
             return Ok($"Book with id {id} was successfully updated");
@@ -135,7 +132,7 @@ namespace LibraryAppWebAPI.Controllers
             }
             else
             {
-                return Problem($"This title was found in rentals. This title cannot be removed");
+                return BadRequest($"This title was found in rentals. This title cannot be removed");
             }
 
             return Ok($"Book with id {id} was successfully deleted");

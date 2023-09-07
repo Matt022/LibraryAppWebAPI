@@ -83,7 +83,6 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Update a dvd", Tags = new[] { "Dvds" })]
         public IActionResult UpdateDvd(int id, [FromBody] DvdDto dvdRequest)
         {
@@ -109,7 +108,7 @@ namespace LibraryAppWebAPI.Controllers
             }
             else
             {
-                return Problem($"This title was found in rentals. This title cannot be updated");
+                return BadRequest($"This title was found in rentals. This title cannot be updated");
             }
 
             return Ok($"Dvd with id {id} was successfully updated");
@@ -120,7 +119,6 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [ProducesResponseType(500, Type = typeof(ProblemDetails))]
         [SwaggerOperation(Summary = "Delete a dvd by id", Tags = new[] { "Dvds" })]
         public IActionResult DeleteDvd(int id)
         {
@@ -133,7 +131,7 @@ namespace LibraryAppWebAPI.Controllers
             }
             else
             {
-                return Problem($"This title was found in rentals. This title cannot be removed");
+                return BadRequest($"This title was found in rentals. This title cannot be removed");
             }
 
             return Ok($"Dvd with id {id} was successfully deleted");
