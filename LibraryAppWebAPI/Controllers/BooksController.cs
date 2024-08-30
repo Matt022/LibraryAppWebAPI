@@ -43,12 +43,14 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get a book by Id", Tags = new[] { "Books" })]
         public ActionResult<Book> GetBook(int id)
         {
-            Book book = _bookRepository.GetById(id);
+            if (id <= 0)
+                return BadRequest();
 
             if (!_bookRepository.BookExists(id))
                 return NotFound($"Book with id {id} does not exist");
-            
-            return book;
+
+            Book book = _bookRepository.GetById(id);
+            return Ok(book);
         }
 
         // POST: api/Books
