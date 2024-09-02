@@ -10,9 +10,9 @@ namespace LibraryAppWebAPI.Service;
 
 public class RentalEntryService : IRentalEntryService
 {
-    private Dictionary<eTitleType, int> DayToRentDictionary = new();
+    private Dictionary<eTitleType, int> DayToRentDictionary = [];
 
-    private Dictionary<eTitleType, decimal> DailyPenaltyFee = new();
+    private Dictionary<eTitleType, decimal> DailyPenaltyFee = [];
 
     private const int BookRentalDays = 21;
     private const int DvdRentalDays = 7;
@@ -110,7 +110,7 @@ public class RentalEntryService : IRentalEntryService
     {
         List<RentalEntry> rentedTitles = GetByUnreturnedMember(rentalEntryCreate.MemberId);
         Member member = _memberRepository.GetById(rentalEntryCreate.MemberId); 
-        Dictionary<bool, string> dictionary = new();
+        Dictionary<bool, string> dictionary = [];
 
         Title title = GetBookOrDvd(rentalEntryCreate.TitleId);
         RentalEntry rentalEntryReq = new();
@@ -182,7 +182,7 @@ public class RentalEntryService : IRentalEntryService
     {
         Title title;
         Member memberReturnTitle;
-        Dictionary<bool, string> dictionary = new();
+        Dictionary<bool, string> dictionary = [];
         RentalEntry rentalEntryReturn = _rentalEntryRepository.GetById(id);
 
         if (!_rentalEntryRepository.RentalEntryExists(id))
@@ -263,7 +263,7 @@ public class RentalEntryService : IRentalEntryService
     public Dictionary<bool, string> ProlongRental(int id, int memberId, ReturnTitleDto prolongTitle, string message)
     {
         Member memberProlongTitle;
-        Dictionary<bool, string> dictionary = new();
+        Dictionary<bool, string> dictionary = [];
         RentalEntry rentalEntryProlong = _rentalEntryRepository.GetById(id);
 
         if (!_rentalEntryRepository.RentalEntryExists(id))
@@ -340,10 +340,7 @@ public class RentalEntryService : IRentalEntryService
         };
     }
 
-    private void InitializeEventSubscriptions()
-    {
-        TitleReturned += _queueService.OnTitleReturned;
-    }
+    private void InitializeEventSubscriptions() => TitleReturned += _queueService.OnTitleReturned;
 
     public void UpdateAvailableTitleCopies(Title title, eTitleCountUpdate action)
     {
@@ -361,7 +358,7 @@ public class RentalEntryService : IRentalEntryService
 
     public Title GetBookOrDvd(int titleId)
     {
-        Title title = null;
+        Title? title = null;
         if (_bookRepository.BookExists(titleId))
         {
             title = _bookRepository.GetById(titleId);
@@ -372,7 +369,7 @@ public class RentalEntryService : IRentalEntryService
             title = _dvdRepository.GetById(titleId);
             return title;
         }
-        return title;
+        return title!;
     }
     #endregion HelperMethods
 }
