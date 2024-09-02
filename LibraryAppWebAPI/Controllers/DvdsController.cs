@@ -4,24 +4,14 @@ using LibraryAppWebAPI.Repository.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using LibraryAppWebAPI.Models.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
-using LibraryAppWebAPI.Repository;
 
 namespace LibraryAppWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [SwaggerTag("Dvds")]
-    public class DvdsController : ControllerBase
+    public class DvdsController(IDvdRepository dvdRepository, IRentalEntryRepository rentalEntryRepository) : ControllerBase
     {
-        private readonly IDvdRepository _dvdRepository;
-        private readonly IRentalEntryRepository _rentalEntryRepository;
-
-        public DvdsController(IDvdRepository dvdRepository, IRentalEntryRepository rentalEntryRepository)
-        {
-            _dvdRepository = dvdRepository;
-            _rentalEntryRepository = rentalEntryRepository;
-        }
-
         // GET: api/Dvds
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
@@ -29,7 +19,7 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get all dvds", Tags = new[] { "Dvds" })]
         public ActionResult<IEnumerable<Dvd>> GetDvds()
         {
-            IEnumerable<Dvd> dvds = _dvdRepository.GetAll();
+            IEnumerable<Dvd> dvds = dvdRepository.GetAll();
             if (dvds == null || !dvds.Any())
                 return NotFound("No dvds in database");
             
@@ -44,9 +34,9 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get dvd by id", Tags = new[] { "Dvds" })]
         public ActionResult<Dvd> GetDvd(int id)
         {
-            Dvd dvd = _dvdRepository.GetById(id);
+            Dvd dvd = dvdRepository.GetById(id);
 
-            if (!_dvdRepository.DvdExists(id))
+            if (!dvdRepository.DvdExists(id))
                 return NotFound($"Dvd with id {id} does not exist");
 
             return dvd;
@@ -73,7 +63,7 @@ namespace LibraryAppWebAPI.Controllers
                 dvd.NumberOfMinutes = dvdRequest.NumberOfMinutes;
             }
 
-            _dvdRepository.Create(dvd);
+            dvdRepository.Create(dvd);
             return CreatedAtAction("GetDvd", new { id = dvd.Id }, dvd);
         }
 
@@ -85,13 +75,13 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Update a dvd", Tags = new[] { "Dvds" })]
         public IActionResult UpdateDvd(int id, [FromBody] DvdDto dvdRequest)
         {
-            if (!_dvdRepository.DvdExists(id))
+            if (!dvdRepository.DvdExists(id))
                 return NotFound($"Dvd with id {id} does not exist");
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            Dvd dvd = _dvdRepository.GetById(id);
+            Dvd dvd = dvdRepository.GetById(id);
             {
                 dvd.Author = dvdRequest.Author;
                 dvd.Name = dvdRequest.Name;
@@ -101,9 +91,9 @@ namespace LibraryAppWebAPI.Controllers
                 dvd.NumberOfMinutes = dvdRequest.NumberOfMinutes;
             }
 
-            if (!_rentalEntryRepository.RentalEntryByTitleIdExist(id))
+            if (!rentalEntryRepository.RentalEntryByTitleIdExist(id))
             {
-                _dvdRepository.Update(dvd);
+                dvdRepository.Update(dvd);
             }
             else
             {
@@ -121,12 +111,12 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Delete a dvd by id", Tags = new[] { "Dvds" })]
         public IActionResult DeleteDvd(int id)
         {
-            if (!_dvdRepository.DvdExists(id))
+            if (!dvdRepository.DvdExists(id))
                 return NotFound($"Dvd with id {id} does not exist");
 
-            if (!_rentalEntryRepository.RentalEntryByTitleIdExist(id))
+            if (!rentalEntryRepository.RentalEntryByTitleIdExist(id))
             {
-                _dvdRepository.Delete(id);
+                dvdRepository.Delete(id);
             }
             else
             {

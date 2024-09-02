@@ -11,21 +11,8 @@ namespace LibraryAppWebAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [SwaggerTag("RentalEntries")]
-    public class RentalEntriesController : ControllerBase
+    public class RentalEntriesController(IRentalEntryRepository rentalEntryRepository, IMemberRepository memberRepository, IRentalEntryService rentalEntryService) : ControllerBase
     {
-        private readonly IRentalEntryRepository _rentalEntryRepository;
-        private readonly IMemberRepository _memberRepository;
-        private readonly IRentalEntryService _rentalEntryService;
-
-        public RentalEntriesController(IRentalEntryRepository rentalEntryRepository, 
-            IMemberRepository memberRepository,
-            IRentalEntryService rentalEntryService)
-        {
-            _rentalEntryRepository = rentalEntryRepository;
-            _memberRepository = memberRepository;
-            _rentalEntryService = rentalEntryService;
-        }
-
         // GET: api/RentalEntries
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
@@ -33,7 +20,7 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get all rental entries", Tags = new[] { "RentalEntries" })]
         public ActionResult<IEnumerable<RentalEntry>> GetRentalEntries()
         {
-            IEnumerable<RentalEntry> rentalEntries = _rentalEntryRepository.GetAll();
+            IEnumerable<RentalEntry> rentalEntries = rentalEntryRepository.GetAll();
             if (rentalEntries == null || !rentalEntries.Any())
                 return NotFound("No rental entries in database");
 
@@ -47,7 +34,7 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get all rental entries, that are past due and not returned yet", Tags = new[] { "RentalEntries" })]
         public ActionResult<IEnumerable<RentalEntry>> GetRentalEntriesPastDue()
         {
-            IEnumerable<RentalEntry> rentalEntries = _rentalEntryRepository.GetRentalEntriesPastDue();
+            IEnumerable<RentalEntry> rentalEntries = rentalEntryRepository.GetRentalEntriesPastDue();
             if (rentalEntries == null || !rentalEntries.Any())
             {
                 return NotFound("There is no rental entry past due");
@@ -65,7 +52,7 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get all unreturned rental entries", Tags = new[] { "RentalEntries" })]
         public ActionResult<List<RentalEntry>> GetUnreturnedRentalEntries()
         {
-            List<RentalEntry> rentalEntries = _rentalEntryRepository.GetUnreturnedRentalEntries();
+            List<RentalEntry> rentalEntries = rentalEntryRepository.GetUnreturnedRentalEntries();
             if (rentalEntries == null || !rentalEntries.Any())
                 return NotFound("There is no unreturned rental entries");
 
@@ -80,14 +67,14 @@ namespace LibraryAppWebAPI.Controllers
         public ActionResult<List<RentalEntry>> GetUnreturnedRentalEntriesByMemberId(int memberId)
         {
             Member member = null;
-            if (!_memberRepository.MemberExists(memberId))
+            if (!memberRepository.MemberExists(memberId))
             {
                 return NotFound($"Member with id {memberId} does not exist");
             }
             else
             {
-                member = _memberRepository.GetById(memberId);
-                List<RentalEntry> rentalEntries = _rentalEntryRepository.GetUnreturnedRentalEntriesByMemberId(memberId);
+                member = memberRepository.GetById(memberId);
+                List<RentalEntry> rentalEntries = rentalEntryRepository.GetUnreturnedRentalEntriesByMemberId(memberId);
 
                 if (rentalEntries == null || !rentalEntries.Any())
                     return NotFound($"There is no unreturned rental entries for {member.FullName()}");
@@ -110,7 +97,7 @@ namespace LibraryAppWebAPI.Controllers
             string message = "";
             bool canRent = false;
 
-            Dictionary<bool, string> dictionary = _rentalEntryService.CanRent(rentalEntryCreate, message);
+            Dictionary<bool, string> dictionary = rentalEntryService.CanRent(rentalEntryCreate, message);
 
             foreach (KeyValuePair<bool, string> keyValues in dictionary)
             {
@@ -141,7 +128,7 @@ namespace LibraryAppWebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            Dictionary<bool, string> dictionary = _rentalEntryService.ReturnTitleWithValidation(id, returnTitle.MemberId, returnTitle, message);
+            Dictionary<bool, string> dictionary = rentalEntryService.ReturnTitleWithValidation(id, returnTitle.MemberId, returnTitle, message);
             foreach (KeyValuePair<bool, string> keyValues in dictionary)
             {
                 canReturn = keyValues.Key;
@@ -171,7 +158,7 @@ namespace LibraryAppWebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            Dictionary<bool, string> dictionary = _rentalEntryService.ProlongRental(id, prolongTitle.MemberId, prolongTitle, message);
+            Dictionary<bool, string> dictionary = rentalEntryService.ProlongRental(id, prolongTitle.MemberId, prolongTitle, message);
             foreach (KeyValuePair<bool, string> keyValues in dictionary)
             {
                 canProlong = keyValues.Key;

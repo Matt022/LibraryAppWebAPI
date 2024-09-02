@@ -7,7 +7,7 @@ namespace LibraryAppWebAPI.Service;
 
 public class QueueService(IQueueItemRepository queueItemRepository, IMessagingService messagingService) : IQueueService
 {
-    public void MarkAsResolved(QueueItem item)
+    private void MarkAsResolved(QueueItem item)
     {
         item.IsResolved = true;
         queueItemRepository.Update(item);
@@ -19,7 +19,7 @@ public class QueueService(IQueueItemRepository queueItemRepository, IMessagingSe
 
         if (queueItems is not null && queueItems.Count > 0)
         {
-            var title = queueItems.OrderBy(i => i.TimeAdded).LastOrDefault();
+            QueueItem title = queueItems.OrderBy(i => i.TimeAdded).LastOrDefault();
             NotifyMember(title);
 
             MarkAsResolved(title);

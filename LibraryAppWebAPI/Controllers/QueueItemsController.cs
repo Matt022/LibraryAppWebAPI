@@ -9,18 +9,8 @@ namespace LibraryAppWebAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [SwaggerTag("QueueItems")]
-    public class QueueItemsController : ControllerBase
+    public class QueueItemsController(IQueueItemRepository queueItemRepository, IMemberRepository memberRepository) : ControllerBase
     {
-        private readonly IQueueItemRepository _queueItemRepository;
-        private readonly IMemberRepository _memberRepository;
-
-        public QueueItemsController( IQueueItemRepository queueItemRepository, 
-            IMemberRepository memberRepository)
-        {
-            _queueItemRepository = queueItemRepository;
-            _memberRepository = memberRepository;
-        }
-
         // GET: api/QueueItems
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
@@ -28,7 +18,7 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get all queue items", Tags = new[] { "QueueItems" })]
         public ActionResult<IEnumerable<QueueItem>> GetQueueItems()
         {
-            IEnumerable<QueueItem> queueItems = _queueItemRepository.GetAll();
+            IEnumerable<QueueItem> queueItems = queueItemRepository.GetAll();
             if (queueItems == null || !queueItems.Any())
                 return NotFound("No queue items in database");
 
@@ -42,8 +32,8 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get all queue items by title id", Tags = new[] { "QueueItems" })]
         public ActionResult<List<QueueItem>> GetAllQueueItemsByMember(int memberId)
         {
-            List<QueueItem> queueItems = _queueItemRepository.GetAll().Where(member => member.Id == memberId).ToList();
-            Member member = _memberRepository.GetById(memberId);
+            List<QueueItem> queueItems = queueItemRepository.GetAll().Where(member => member.Id == memberId).ToList();
+            Member member = memberRepository.GetById(memberId);
             
             if (member == null)
             {

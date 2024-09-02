@@ -60,7 +60,7 @@ public class RentalEntryService : IRentalEntryService
     {
         IEnumerable<RentalEntry> notReturnedEntries = _rentalEntryRepository.Find(e => e.ReturnDate == null);
 
-        List<RentalEntry> result = new();
+        List<RentalEntry> result = [];
         foreach (var entry in notReturnedEntries)
         {
             if (IsEntryPastDue(entry))
@@ -340,7 +340,7 @@ public class RentalEntryService : IRentalEntryService
         };
     }
 
-    private void InitializeEventSubscriptions() => TitleReturned += _queueService.OnTitleReturned;
+    private void InitializeEventSubscriptions() => TitleReturned += _queueService.OnTitleReturned!;
 
     public void UpdateAvailableTitleCopies(Title title, eTitleCountUpdate action)
     {
