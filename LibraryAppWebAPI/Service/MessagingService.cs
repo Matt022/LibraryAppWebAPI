@@ -4,18 +4,11 @@ using LibraryAppWebAPI.Service.IServices;
 
 namespace LibraryAppWebAPI.Service;
 
-public class MessagingService : IMessagingService
+public class MessagingService(IMessageRepository messageRepository) : IMessagingService
 {
-    private readonly IMessageRepository _messageRepository;
-
-    public MessagingService(IMessageRepository messageRepository)
-    {
-        _messageRepository = messageRepository;
-    }
-
     public List<Message> GetMessagesForUser(int userId)
     {
-        return _messageRepository.Find(m => m.MemberId == userId).ToList();
+        return messageRepository.Find(m => m.MemberId == userId).ToList();
     }
 
     public bool SendMessage(int memberId, string subject, string message)
@@ -28,7 +21,7 @@ public class MessagingService : IMessagingService
             msg.SendData = DateTime.UtcNow;
         }
 
-        Message result = _messageRepository.Create(msg);
+        Message result = messageRepository.Create(msg);
         return result is not null;
     }
 }

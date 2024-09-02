@@ -10,17 +10,8 @@ namespace LibraryAppWebAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [SwaggerTag("Books")]
-    public class BooksController : ControllerBase
+    public class BooksController(IBookRepository bookRepository, IRentalEntryRepository rentalEntryRepository) : ControllerBase
     {
-        private readonly IBookRepository _bookRepository;
-        private readonly IRentalEntryRepository _rentalEntryRepository;
-
-        public BooksController(IBookRepository bookRepository, IRentalEntryRepository rentalEntryRepository)
-        {
-            _bookRepository = bookRepository;
-            _rentalEntryRepository = rentalEntryRepository;
-        }
-
         // GET: api/Books
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
@@ -28,7 +19,7 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get all books", Tags = new[] { "Books" })]
         public ActionResult<IEnumerable<Book>> GetBooks()
         {
-            IEnumerable<Book> books = _bookRepository.GetAll();
+            IEnumerable<Book> books = bookRepository.GetAll();
             if (books == null || !books.Any())          
                 return NotFound("No books in database");
             
@@ -46,10 +37,10 @@ namespace LibraryAppWebAPI.Controllers
             if (id <= 0)
                 return BadRequest();
 
-            if (!_bookRepository.BookExists(id))
+            if (!bookRepository.BookExists(id))
                 return NotFound($"Book with id {id} does not exist");
 
-            Book book = _bookRepository.GetById(id);
+            Book book = bookRepository.GetById(id);
             return Ok(book);
         }
 
@@ -73,7 +64,7 @@ namespace LibraryAppWebAPI.Controllers
                 ISBN = bookRequest.ISBN
             };
 
-            _bookRepository.Create(book);
+            bookRepository.Create(book);
             return CreatedAtAction("GetBook", new { id = book.Id }, book);
         }
 
@@ -85,7 +76,7 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Update a book", Tags = new[] { "Books" })]
         public IActionResult UpdateBook(int id, [FromBody] BookDto bookRequest)
         {
-            if (!_bookRepository.BookExists(id))
+            if (!bookRepository.BookExists(id))
             {
                 return NotFound($"Book with id {id} does not exist");
             }
@@ -93,7 +84,7 @@ namespace LibraryAppWebAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            Book book = _bookRepository.GetById(id);
+            Book book = bookRepository.GetById(id);
             {
                 book.Author = bookRequest.Author;
                 book.Name = bookRequest.Name;
@@ -103,9 +94,9 @@ namespace LibraryAppWebAPI.Controllers
                 book.ISBN = bookRequest.ISBN;
             };
 
-            if (!_rentalEntryRepository.RentalEntryByTitleIdExist(id))
+            if (!rentalEntryRepository.RentalEntryByTitleIdExist(id))
             {
-                _bookRepository.Update(book);
+                bookRepository.Update(book);
             }
             else
             {
@@ -123,12 +114,12 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Delete a book by Id", Tags = new[] { "Books" })]
         public IActionResult DeleteBook(int id)
         {
-            if (!_bookRepository.BookExists(id))
+            if (!bookRepository.BookExists(id))
                 return NotFound($"Book with id {id} does not exist");
 
-            if (!_rentalEntryRepository.RentalEntryByTitleIdExist(id))
+            if (!rentalEntryRepository.RentalEntryByTitleIdExist(id))
             {
-                _bookRepository.Delete(id);
+                bookRepository.Delete(id);
             }
             else
             {

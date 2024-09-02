@@ -2,12 +2,7 @@
 
 namespace LibraryAppWebAPI.Models.Helper;
 
-public class TitleReturnedEventArgs : EventArgs
+public class TitleReturnedEventArgs(Title title) : EventArgs
 {
-    public TitleReturnedEventArgs(Title title)
-    {
-        Title = title;
-    }
-
-    public Title Title { get; }
+    public Title Title { get; } = title;
 }
