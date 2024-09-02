@@ -11,21 +11,8 @@ namespace LibraryAppWebAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [SwaggerTag("Members")]
-    public class MembersController : ControllerBase
+    public class MembersController(IMemberRepository memberRepository, IMessagingService messagingService, IRentalEntryRepository rentalEntryRepository, IQueueItemRepository queueItemRepository) : ControllerBase
     {
-        private readonly IMemberRepository _memberRepository;
-        private readonly IMessagingService _messagingService;
-        private readonly IRentalEntryRepository _rentalEntryRepository;
-        private readonly IQueueItemRepository _queueItemRepository;
-
-        public MembersController(IMemberRepository memberRepository, IMessagingService messagingService, IRentalEntryRepository rentalEntryRepository, IQueueItemRepository queueItemRepository)
-        {
-            _memberRepository = memberRepository;
-            _messagingService = messagingService;
-            _rentalEntryRepository = rentalEntryRepository;
-            _queueItemRepository = queueItemRepository;
-        }
-
         // GET: api/Members
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
@@ -33,7 +20,7 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get all members", Tags = new[] { "Members" })]
         public ActionResult<IEnumerable<Member>> GetMembers()
         {
-            IEnumerable<Member> members = _memberRepository.GetAll();
+            IEnumerable<Member> members = memberRepository.GetAll();
             if (members == null || !members.Any())
                 return NotFound("No members in database");
 
@@ -48,10 +35,10 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Get a member by Id", Tags = new[] { "Members" })]
         public ActionResult<Member> GetMember(int id)
         {
-            if (!_memberRepository.MemberExists(id))
+            if (!memberRepository.MemberExists(id))
                 return NotFound($"Member with id {id} does not exist");
 
-            Member member = _memberRepository.GetById(id);
+            Member member = memberRepository.GetById(id);
             return member;
         }
 
@@ -73,11 +60,11 @@ namespace LibraryAppWebAPI.Controllers
                 member.PersonalId = memberRequest.PersonalId;
             }
 
-            _memberRepository.Create(member);
-            Member memberSendMessage = _memberRepository.GetById(member.Id);
+            memberRepository.Create(member);
+            Member memberSendMessage = memberRepository.GetById(member.Id);
             string messageSubject = "Welcome to our team";
             string messageContext = $"Dear Mr/Mrs {member.LastName}, we are glad that you became a part of our team. We hope you will enjoy our services. \n Best Regards Library Team <3";
-            _messagingService.SendMessage(memberSendMessage.Id, messageSubject, messageContext);
+            messagingService.SendMessage(memberSendMessage.Id, messageSubject, messageContext);
             return CreatedAtAction("GetMember", new { id = member.Id }, member);
         }
 
@@ -89,13 +76,13 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Update a member", Tags = new[] { "Members" })]
         public IActionResult UpdateMember(int id, [FromBody] MemberDto memberRequest)
         {
-            if (!_memberRepository.MemberExists(id))
+            if (!memberRepository.MemberExists(id))
                 return NotFound($"Member with id {id} does not exist");
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            Member member = _memberRepository.GetById(id);
+            Member member = memberRepository.GetById(id);
             {
                 member.DateOfBirth = memberRequest.DateOfBirth;
                 member.FirstName = memberRequest.FirstName;
@@ -103,7 +90,7 @@ namespace LibraryAppWebAPI.Controllers
                 member.PersonalId = memberRequest.PersonalId;
             }
 
-            _memberRepository.Update(member);
+            memberRepository.Update(member);
             return Ok($"Member with id {id} was successfully updated");
         }
 
@@ -115,20 +102,20 @@ namespace LibraryAppWebAPI.Controllers
         [SwaggerOperation(Summary = "Delete a member by Id", Tags = new[] { "Members" })]
         public IActionResult DeleteMember(int id)
         {
-            if (!_memberRepository.MemberExists(id))
+            if (!memberRepository.MemberExists(id))
                 return NotFound($"Member with id {id} does not exist");
 
-            if (_queueItemRepository.QueueItemByMemberIdExist(id))
+            if (queueItemRepository.QueueItemByMemberIdExist(id))
             {
                 return BadRequest($"Member with id {id} is in queue. This member cannot be removed");
             }
             
-            if (_rentalEntryRepository.RentalEntryByMemberIdExist(id))
+            if (rentalEntryRepository.RentalEntryByMemberIdExist(id))
             {
                 return BadRequest($"There are some rentals made by a member with id {id}. This member cannot be removed");
             }
 
-            _memberRepository.Delete(id);
+            memberRepository.Delete(id);
             return Ok($"Member with id {id} was successfully deleted");
         }
     }

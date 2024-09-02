@@ -5,7 +5,5 @@ namespace LibraryAppWebAPI.Service.IServices;
 
 public interface IQueueService
 {
-    void MarkAsResolved(QueueItem item);
-
     void OnTitleReturned(object sender, TitleReturnedEventArgs args);
 }
