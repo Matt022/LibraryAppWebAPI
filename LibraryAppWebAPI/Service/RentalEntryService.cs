@@ -18,8 +18,8 @@ public class RentalEntryService : IRentalEntryService
     private const int DvdRentalDays = 7;
     private const decimal BookDailyFee = 0.1M;
     private const int DvdDailyFee = 1;
-    
-    private event EventHandler<TitleReturnedEventArgs> TitleReturned;
+
+    private event EventHandler<TitleReturnedEventArgs>? TitleReturned;
 
     private readonly IRentalEntryRepository _rentalEntryRepository;
     private readonly IBookRepository _bookRepository;
@@ -28,7 +28,6 @@ public class RentalEntryService : IRentalEntryService
     private readonly IQueueItemRepository _queueItemRepository;
     private readonly IQueueService _queueService;
     private readonly IMessagingService _messagingService;
-
 
     public RentalEntryService(IRentalEntryRepository rentalEntryRepository, 
         IBookRepository bookRepository, 
@@ -155,7 +154,6 @@ public class RentalEntryService : IRentalEntryService
                 Title titleToQueue = GetBookOrDvd(rentalEntryCreate.TitleId);
                 queueItem.Title = titleToQueue;
                 queueItem.Member = member;
-
             }
 
             queueItem.TimeAdded = DateTime.UtcNow;
@@ -224,7 +222,7 @@ public class RentalEntryService : IRentalEntryService
             memberReturnTitle = _memberRepository.GetById(returnTitle.MemberId);
             rentalEntryReturn.Member = memberReturnTitle;
 
-            string messageSubjectMemberReturnTitle = $"{rentalEntryReturn.Title.Name} was successfully returned";
+            string messageSubjectMemberReturnTitle = $"{rentalEntryReturn.Title!.Name} was successfully returned";
             string messageContextMemberReturnTitle = $"Dear Mr/Mrs {memberReturnTitle.LastName}, title {rentalEntryReturn.Title.Name} was successfully returned. Thank you for using our services \n Best Regards Library Team <3";
             _messagingService.SendMessage(memberReturnTitle.Id, messageSubjectMemberReturnTitle, messageContextMemberReturnTitle);
 
