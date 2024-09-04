@@ -10,14 +10,22 @@ namespace LibraryAppWebAPI.Service;
 
 public class RentalEntryService : IRentalEntryService
 {
-    private Dictionary<eTitleType, int> DayToRentDictionary = [];
-
-    private Dictionary<eTitleType, decimal> DailyPenaltyFee = [];
-
     private const int BookRentalDays = 21;
     private const int DvdRentalDays = 7;
     private const decimal BookDailyFee = 0.1M;
     private const int DvdDailyFee = 1;
+
+    private Dictionary<eTitleType, decimal> DailyPenaltyFee = new ()
+    {
+        { eTitleType.Book, BookDailyFee},
+        { eTitleType.Dvd, DvdDailyFee}
+    };
+
+    private Dictionary<eTitleType, int> DayToRentDictionary = new ()
+    {
+        { eTitleType.Book, BookRentalDays},
+        { eTitleType.Dvd, DvdRentalDays}
+    };
 
     private event EventHandler<TitleReturnedEventArgs>? TitleReturned;
 
@@ -45,7 +53,6 @@ public class RentalEntryService : IRentalEntryService
         _queueService = queueService;
         _messagingService = messagingService;
 
-        InitializeConstants();
         InitializeEventSubscriptions();
     }
 
@@ -323,21 +330,6 @@ public class RentalEntryService : IRentalEntryService
     #endregion BoolActionMethods
 
     #region HelperMethods
-    private void InitializeConstants()
-    {
-        DayToRentDictionary = new Dictionary<eTitleType, int>()
-        {
-            { eTitleType.Book, BookRentalDays},
-            { eTitleType.Dvd, DvdRentalDays}
-        };
-
-        DailyPenaltyFee = new Dictionary<eTitleType, decimal>()
-        {
-            { eTitleType.Book, BookDailyFee},
-            { eTitleType.Dvd, DvdDailyFee}
-        };
-    }
-
     private void InitializeEventSubscriptions() => TitleReturned += _queueService.OnTitleReturned!;
 
     public void UpdateAvailableTitleCopies(Title title, eTitleCountUpdate action)
