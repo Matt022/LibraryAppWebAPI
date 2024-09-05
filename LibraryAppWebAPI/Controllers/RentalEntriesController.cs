@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Swashbuckle.AspNetCore.Annotations;
+
 using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Models.DTOs;
 using LibraryAppWebAPI.Repository.Interfaces;
 using LibraryAppWebAPI.Service.IServices;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace LibraryAppWebAPI.Controllers
 {
@@ -17,7 +18,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get all rental entries", Tags = new[] { "RentalEntries" })]
+        [SwaggerOperation(Summary = "Get all rental entries", Tags = ["RentalEntries"])]
         public ActionResult<IEnumerable<RentalEntry>> GetRentalEntries()
         {
             IEnumerable<RentalEntry> rentalEntries = rentalEntryRepository.GetAll();
@@ -31,7 +32,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet("PastDue")]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get all rental entries, that are past due and not returned yet", Tags = new[] { "RentalEntries" })]
+        [SwaggerOperation(Summary = "Get all rental entries, that are past due and not returned yet", Tags = ["RentalEntries"])]
         public ActionResult<IEnumerable<RentalEntry>> GetRentalEntriesPastDue()
         {
             IEnumerable<RentalEntry> rentalEntries = rentalEntryRepository.GetRentalEntriesPastDue();
@@ -49,7 +50,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet("NotReturned")]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get all unreturned rental entries", Tags = new[] { "RentalEntries" })]
+        [SwaggerOperation(Summary = "Get all unreturned rental entries", Tags = ["RentalEntries"])]
         public ActionResult<List<RentalEntry>> GetUnreturnedRentalEntries()
         {
             List<RentalEntry> rentalEntries = rentalEntryRepository.GetUnreturnedRentalEntries();
@@ -63,10 +64,10 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet("NotReturned/{memberId}")]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get all unreturned rental entries by member Id", Tags = new[] { "RentalEntries" })]
+        [SwaggerOperation(Summary = "Get all unreturned rental entries by member Id", Tags = ["RentalEntries"])]
         public ActionResult<List<RentalEntry>> GetUnreturnedRentalEntriesByMemberId(int memberId)
         {
-            Member member = null;
+            Member? member = null;
             if (!memberRepository.MemberExists(memberId))
             {
                 return NotFound($"Member with id {memberId} does not exist");
@@ -88,7 +89,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [SwaggerOperation(Summary = "Create a rent or rent a title", Tags = new[] { "RentalEntries" })]
+        [SwaggerOperation(Summary = "Create a rent or rent a title", Tags = ["RentalEntries"])]
         public ActionResult<Member> RentTitle([FromBody] RentalEntryDto rentalEntryCreate)
         {
             if (!ModelState.IsValid)
@@ -120,7 +121,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Return a title", Tags = new[] { "RentalEntries" })]
+        [SwaggerOperation(Summary = "Return a title", Tags = ["RentalEntries"])]
         public IActionResult ReturnTitle(int id, [FromBody] ReturnTitleDto returnTitle)
         {
             string message = "";
@@ -150,7 +151,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Prolong a title", Tags = new[] { "RentalEntries" })]
+        [SwaggerOperation(Summary = "Prolong a title", Tags = ["RentalEntries"])]
         public IActionResult ProlongTitle(int id, [FromBody] ReturnTitleDto prolongTitle)
         {
             string message = "";

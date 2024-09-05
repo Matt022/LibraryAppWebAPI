@@ -1,16 +1,17 @@
-﻿using LibraryAppWebAPI.Base;
-using LibraryAppWebAPI.Base.Enums;
-using LibraryAppWebAPI.DataContext;
-using LibraryAppWebAPI.Models;
-using LibraryAppWebAPI.Repository.Interfaces;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+
+using LibraryAppWebAPI.Base;
+using LibraryAppWebAPI.Base.Enums;
+using LibraryAppWebAPI.Models;
+using LibraryAppWebAPI.DataContext;
+using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Repository;
 
 public class RentalEntryRepository : IRentalEntryRepository
 {
-    private Dictionary<eTitleType, int> DayToRentDictionary = new ();
+    private Dictionary<eTitleType, int> DayToRentDictionary = [];
 
     private readonly LibraryContext _context;
     private readonly IMemberRepository _memberRepository;
@@ -99,7 +100,7 @@ public class RentalEntryRepository : IRentalEntryRepository
 
         if (notReturnedEntries == null)
         {
-            List<RentalEntry> result = new();
+            List<RentalEntry> result = [];
             {
                 foreach (RentalEntry entry in notReturnedEntries)
                 {
@@ -146,7 +147,6 @@ public class RentalEntryRepository : IRentalEntryRepository
         {
             return null;
         }
-
     }
 
     public List<RentalEntry> GetUnreturnedRentalEntriesByMemberId(int memberId)
@@ -234,7 +234,7 @@ public class RentalEntryRepository : IRentalEntryRepository
 
     public Title GetBookOrDvd(int titleId)
     {
-        Title title = null;
+        Title? title = null;
         if (_bookRepository.BookExists(titleId))
         {
             title = _bookRepository.GetById(titleId);
@@ -245,7 +245,7 @@ public class RentalEntryRepository : IRentalEntryRepository
             title = _dvdRepository.GetById(titleId);
             return title;
         }
-        return title;
+        return title!;
     }
     #region BoolMethods 
     public bool RentalEntryByTitleIdExist(int titleId)

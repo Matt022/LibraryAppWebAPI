@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using LibraryAppWebAPI.Models;
-using LibraryAppWebAPI.Repository.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Swashbuckle.AspNetCore.Annotations;
+
+using LibraryAppWebAPI.Models;
+using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Controllers
 {
@@ -15,7 +16,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get all queue items", Tags = new[] { "QueueItems" })]
+        [SwaggerOperation(Summary = "Get all queue items", Tags = ["QueueItems"])]
         public ActionResult<IEnumerable<QueueItem>> GetQueueItems()
         {
             IEnumerable<QueueItem> queueItems = queueItemRepository.GetAll();
@@ -29,7 +30,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(QueueItem))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get all queue items by title id", Tags = new[] { "QueueItems" })]
+        [SwaggerOperation(Summary = "Get all queue items by title id", Tags = ["QueueItems"])]
         public ActionResult<List<QueueItem>> GetAllQueueItemsByMember(int memberId)
         {
             List<QueueItem> queueItems = queueItemRepository.GetAll().Where(member => member.Id == memberId).ToList();
@@ -45,7 +46,7 @@ namespace LibraryAppWebAPI.Controllers
             }
             else
             {
-                return queueItems;
+                return Ok(queueItems);
             }
         }
     }

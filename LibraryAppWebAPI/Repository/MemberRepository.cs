@@ -1,5 +1,5 @@
-﻿using LibraryAppWebAPI.DataContext;
-using LibraryAppWebAPI.Models;
+﻿using LibraryAppWebAPI.Models;
+using LibraryAppWebAPI.DataContext;
 using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Repository;
@@ -50,7 +50,7 @@ public class MemberRepository : IMemberRepository
 
     public Member GetById(int id)
     {
-        return _context.Members.SingleOrDefault(x => x.Id == id);
+        return _context.Members.SingleOrDefault(x => x.Id == id)!;
     }
 
     public void Update(Member entity)

@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using LibraryAppWebAPI.Models;
-using LibraryAppWebAPI.Repository.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
-using LibraryAppWebAPI.Models.DTOs;
-using LibraryAppWebAPI.Service.IServices;
 using Swashbuckle.AspNetCore.Annotations;
+
+using LibraryAppWebAPI.Models;
+using LibraryAppWebAPI.Models.DTOs;
+using LibraryAppWebAPI.Repository.Interfaces;
+using LibraryAppWebAPI.Service.IServices;
 
 namespace LibraryAppWebAPI.Controllers
 {
@@ -17,7 +18,7 @@ namespace LibraryAppWebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get all members", Tags = new[] { "Members" })]
+        [SwaggerOperation(Summary = "Get all members", Tags = ["Members"])]
         public ActionResult<IEnumerable<Member>> GetMembers()
         {
             IEnumerable<Member> members = memberRepository.GetAll();
@@ -32,21 +33,21 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(Member))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Get a member by Id", Tags = new[] { "Members" })]
+        [SwaggerOperation(Summary = "Get a member by Id", Tags = ["Members"])]
         public ActionResult<Member> GetMember(int id)
         {
             if (!memberRepository.MemberExists(id))
                 return NotFound($"Member with id {id} does not exist");
 
             Member member = memberRepository.GetById(id);
-            return member;
+            return Ok(member);
         }
 
         // POST: api/Members
         [HttpPost]
         [ProducesResponseType(201, Type = typeof(Created))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
-        [SwaggerOperation(Summary = "Create a member", Tags = new[] { "Members" })]
+        [SwaggerOperation(Summary = "Create a member", Tags = ["Members"])]
         public ActionResult<Member> CreateMember([FromBody] MemberDto memberRequest)
         {
             if (!ModelState.IsValid)
@@ -73,7 +74,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Update a member", Tags = new[] { "Members" })]
+        [SwaggerOperation(Summary = "Update a member", Tags = ["Members"])]
         public IActionResult UpdateMember(int id, [FromBody] MemberDto memberRequest)
         {
             if (!memberRepository.MemberExists(id))
@@ -99,7 +100,7 @@ namespace LibraryAppWebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(OkResult))]
         [ProducesResponseType(400, Type = typeof(BadRequest))]
         [ProducesResponseType(404, Type = typeof(NotFound))]
-        [SwaggerOperation(Summary = "Delete a member by Id", Tags = new[] { "Members" })]
+        [SwaggerOperation(Summary = "Delete a member by Id", Tags = ["Members"])]
         public IActionResult DeleteMember(int id)
         {
             if (!memberRepository.MemberExists(id))

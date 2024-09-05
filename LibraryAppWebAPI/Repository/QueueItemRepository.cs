@@ -1,9 +1,10 @@
-﻿using LibraryAppWebAPI.Base;
-using LibraryAppWebAPI.DataContext;
-using LibraryAppWebAPI.Models;
-using LibraryAppWebAPI.Repository.Interfaces;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+
+using LibraryAppWebAPI.Base;
+using LibraryAppWebAPI.Models;
+using LibraryAppWebAPI.DataContext;
+using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Repository;
 
@@ -159,7 +160,7 @@ public class QueueItemRepository : IQueueItemRepository
 
     public Title GetBookOrDvd(int titleId)
     {
-        Title title = null;
+        Title? title = null;
         if (_bookRepository.BookExists(titleId))
         {
             title = _bookRepository.GetById(titleId);
@@ -170,6 +171,6 @@ public class QueueItemRepository : IQueueItemRepository
             title = _dvdRepository.GetById(titleId);
             return title;
         }
-        return title;
+        return title!;
     }
 }

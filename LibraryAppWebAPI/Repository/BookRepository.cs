@@ -1,5 +1,5 @@
-﻿using LibraryAppWebAPI.DataContext;
-using LibraryAppWebAPI.Models;
+﻿using LibraryAppWebAPI.Models;
+using LibraryAppWebAPI.DataContext;
 using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Repository;
@@ -47,7 +47,7 @@ public class BookRepository : IBookRepository
     public Book GetById(int id)
     {
         Book? result = _context.Book.FirstOrDefault(b => b.Id == id);
-        return result;
+        return result!;
     }
 
     public bool IsBookAvailable(int id)

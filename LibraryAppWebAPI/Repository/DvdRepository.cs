@@ -1,5 +1,5 @@
-﻿using LibraryAppWebAPI.DataContext;
-using LibraryAppWebAPI.Models;
+﻿using LibraryAppWebAPI.Models;
+using LibraryAppWebAPI.DataContext;
 using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Repository;
@@ -46,7 +46,7 @@ public class DvdRepository : IDvdRepository
 
     public Dvd GetById(int id)
     {
-        return _context.Dvds.FirstOrDefault(b => b.Id == id);
+        return _context.Dvds.FirstOrDefault(b => b.Id == id)!;
     }
 
     public bool IsDvdAvailable(int id)

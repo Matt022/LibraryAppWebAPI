@@ -1,8 +1,9 @@
-﻿using LibraryAppWebAPI.DataContext;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+
+using LibraryAppWebAPI.DataContext;
 using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Repository.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace LibraryAppWebAPI.Repository;
 
@@ -38,7 +39,7 @@ public class MessageRepository : IMessageRepository
     {
         Message? message = _context.Messages.AsNoTracking().FirstOrDefault(x => x.Id == id);
         {
-            Member member = _memberRepository.GetById(message.MemberId);
+            Member member = _memberRepository.GetById(message!.MemberId);
             message.Member = member;
         }
         return message;

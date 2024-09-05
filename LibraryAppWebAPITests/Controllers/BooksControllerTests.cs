@@ -1,12 +1,13 @@
 ﻿using Moq;
-using LibraryAppWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
-using LibraryAppWebAPI.Repository.Interfaces;
+using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Models.DTOs;
+using LibraryAppWebAPI.Controllers;
+using LibraryAppWebAPI.Repository.Interfaces;
 
-namespace LibraryAppWebAPI.Controllers.Tests;
+namespace LibraryAppWebAPITests.Controllers;
 
 [TestClass()]
 public class BooksControllerTests
@@ -28,11 +29,11 @@ public class BooksControllerTests
     public void GetBooks_ReturnsOkResult_WithListOfBooks()
     {
         // Arrange
-        List<Book> books = new()
-        {
+        List<Book> books =
+        [
             new () { Id = 1, Name = "Book 1", Author = "Author 1", NumberOfPages=250, ISBN="s1s5-ag1a5g5ag-ag51ga5g", AvailableCopies = 5, TotalAvailableCopies = 5 },
             new () { Id = 2, Name = "Book 2", Author = "Author 2", NumberOfPages=300, ISBN="s5th1s-srth51hs-srth1sj", AvailableCopies = 5, TotalAvailableCopies = 5 }
-        };
+        ];
         _mockBookRepo.Setup(repo => repo.GetAll()).Returns(books);
 
         // Act
@@ -234,7 +235,7 @@ public class BooksControllerTests
     {
         // Arrange
         int bookId = 1;
-        BookDto bookRequest = new (); // Invalid request (e.g., missing required fields)
+        BookDto bookRequest = new(); // Invalid request (e.g., missing required fields)
 
         // Uistite sa, že mock vráti true, aby kontrolér prešiel validáciou modelu.
         _mockBookRepo.Setup(repo => repo.BookExists(bookId)).Returns(true);
