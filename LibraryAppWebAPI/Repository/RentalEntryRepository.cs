@@ -11,7 +11,7 @@ namespace LibraryAppWebAPI.Repository;
 
 public class RentalEntryRepository : IRentalEntryRepository
 {
-    private Dictionary<eTitleType, int> DayToRentDictionary = [];
+    private readonly Dictionary<eTitleType, int> DayToRentDictionary = [];
 
     private readonly LibraryContext _context;
     private readonly IMemberRepository _memberRepository;
