@@ -40,7 +40,7 @@ public class QueueItemsController(IQueueItemRepository queueItemRepository, IMem
         {
             return NotFound($"Member with id {memberId} does not exist");
         }
-        else if (queueItems == null)
+        else if (queueItems == null || queueItems.Count == 0)
         {
             return NotFound($"Queue items for member {member.FullName()} was not found");
         }
