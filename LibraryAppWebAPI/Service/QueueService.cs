@@ -19,18 +19,18 @@ public class QueueService(IQueueItemRepository queueItemRepository, IMessagingSe
 
         if (queueItems is not null && queueItems.Count > 0)
         {
-            QueueItem title = queueItems.OrderBy(i => i.TimeAdded).LastOrDefault();
-            NotifyMember(title);
+            QueueItem? title = queueItems.OrderBy(i => i.TimeAdded).LastOrDefault();
+            NotifyMember(title!);
 
-            MarkAsResolved(title);
+            MarkAsResolved(title!);
         }
     }
 
     private void NotifyMember(QueueItem item)
     {
-        string subject = $"Title {item.Title.Name} available!";
-        string message = $"Dear Mr/Mrs {item.Member.LastName},{Environment.NewLine}\tthe title {item.Title.Name} is available for rent!{Environment.NewLine}Best regards,\t The Library Team <3";
+        string subject = $"Title {item?.Title?.Name} available!";
+        string message = $"Dear Mr/Mrs {item?.Member?.LastName},{Environment.NewLine}\tthe title {item?.Title?.Name} is available for rent!{Environment.NewLine}Best regards,\t The Library Team <3";
 
-        messagingService.SendMessage(item.MemberId, subject, message);
+        messagingService.SendMessage(item!.MemberId, subject, message);
     }
 }
