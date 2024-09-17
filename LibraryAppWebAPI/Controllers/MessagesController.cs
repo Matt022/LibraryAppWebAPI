@@ -31,7 +31,6 @@ public class MessagesController(IMessageRepository messageRepository, IMemberRep
     // GET: api/Messages/5
     [HttpGet("{id}")]
     [ProducesResponseType(200, Type = typeof(Message))]
-    [ProducesResponseType(400, Type = typeof(BadRequest))]
     [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Get message by id", Tags = ["Messages"])]
     public ActionResult<Message> GetMessage(int id)
@@ -46,7 +45,6 @@ public class MessagesController(IMessageRepository messageRepository, IMemberRep
     // GET: api/Messages/Member/5
     [HttpGet("Member/{userId}")]
     [ProducesResponseType(200, Type = typeof(List<Message>))]
-    [ProducesResponseType(400, Type = typeof(BadRequest))]
     [ProducesResponseType(404, Type = typeof(NotFoundResult))]
     [SwaggerOperation(Summary = "Get messages for specific user by user Id", Tags = ["Messages"])]
     public ActionResult<List<Message>> GetMessagesByUserId(int userId)

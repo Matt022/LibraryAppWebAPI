@@ -15,13 +15,13 @@ public class RentalEntryService : IRentalEntryService
     private const decimal BookDailyFee = 0.1M;
     private const int DvdDailyFee = 1;
 
-    private Dictionary<eTitleType, decimal> DailyPenaltyFee = new ()
+    private readonly Dictionary<eTitleType, decimal> DailyPenaltyFee = new ()
     {
         { eTitleType.Book, BookDailyFee},
         { eTitleType.Dvd, DvdDailyFee}
     };
 
-    private Dictionary<eTitleType, int> DayToRentDictionary = new ()
+    private readonly Dictionary<eTitleType, int> DayToRentDictionary = new ()
     {
         { eTitleType.Book, BookRentalDays},
         { eTitleType.Dvd, DvdRentalDays}
