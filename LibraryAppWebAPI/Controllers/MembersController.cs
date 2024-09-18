@@ -31,7 +31,6 @@ public class MembersController(IMemberRepository memberRepository, IMessagingSer
     // GET: api/Members/5
     [HttpGet("{id}")]
     [ProducesResponseType(200, Type = typeof(Member))]
-    [ProducesResponseType(400, Type = typeof(BadRequest))]
     [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Get a member by Id", Tags = ["Members"])]
     public ActionResult<Member> GetMember(int id)
