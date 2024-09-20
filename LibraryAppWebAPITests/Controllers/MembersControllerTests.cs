@@ -6,6 +6,7 @@ using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Controllers;
 using LibraryAppWebAPI.Service.IServices;
 using LibraryAppWebAPI.Repository.Interfaces;
+using LibraryAppWebAPI.Models.DTOs;
 
 namespace LibraryAppWebAPITests.Controllers;
 
@@ -135,4 +136,72 @@ public class MembersControllerTests
 
     #endregion GetSingleMember
 
+    #region CreateMember
+
+    // Test 1: Skontroluj, či metóda vráti CreatedAtAction, keď člen je úspešne vytvorený
+    [Fact]
+    public void CreateMember_ReturnsCreatedAtAction_WhenModelIsValid()
+    {
+        // Arrange - Príprava testovacích dát
+        var memberRequest = new MemberDto
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            PersonalId = "123456789",
+            DateOfBirth = new DateTime(1990, 1, 1)
+        };
+
+        var member = new Member
+        {
+            Id = 1,
+            FirstName = memberRequest.FirstName,
+            LastName = memberRequest.LastName,
+            PersonalId = memberRequest.PersonalId,
+            DateOfBirth = memberRequest.DateOfBirth
+        };
+
+        // Nastavenie mock objektov
+        _mockMemberRepository.Setup(repo => repo.Create(It.IsAny<Member>())).Verifiable();
+        _mockMemberRepository.Setup(repo => repo.GetById(It.IsAny<int>())).Returns(member);
+        _mockMessagingService.Setup(service => service.SendMessage(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Verifiable();
+
+        // Act - Volanie testovanej metódy
+        var result = _membersController.CreateMember(memberRequest);
+
+        // Assert - Overenie, že výsledkom je CreatedAtActionResult
+        var createdAtActionResult = Xunit.Assert.IsType<CreatedAtActionResult>(result.Result);
+        Xunit.Assert.Equal("GetMember", createdAtActionResult.ActionName);
+        var returnedMember = Xunit.Assert.IsType<Member>(createdAtActionResult.Value);
+        Xunit.Assert.Equal(memberRequest.FirstName, returnedMember.FirstName);
+
+        // Overenie, že metódy v mockoch boli volané
+        _mockMemberRepository.Verify(repo => repo.Create(It.IsAny<Member>()), Times.Once);
+        _mockMessagingService.Verify(service => service.SendMessage(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    }
+
+    // Test 2: Skontroluj, či metóda vráti BadRequest, keď model nie je platný
+    [Fact]
+    public void CreateMember_ReturnsBadRequest_WhenModelIsInvalid()
+    {
+        // Arrange - Nastavenie neplatného modelu
+        var memberRequest = new MemberDto
+        {
+            FirstName = "",
+            LastName = "Doe",
+            PersonalId = "123456789",
+            DateOfBirth = new DateTime(1990, 1, 1)
+        };
+
+        // Pridanie chyby do ModelState pre simuláciu neplatného modelu
+        _membersController.ModelState.AddModelError("FirstName", "Required");
+
+        // Act - Volanie testovanej metódy
+        var result = _membersController.CreateMember(memberRequest);
+
+        // Assert - Overenie, že výsledkom je BadRequestObjectResult
+        var badRequestResult = Xunit.Assert.IsType<BadRequestObjectResult>(result.Result);
+        Xunit.Assert.IsType<SerializableError>(badRequestResult.Value);
+    }
+
+    #endregion CreateMember
 }
