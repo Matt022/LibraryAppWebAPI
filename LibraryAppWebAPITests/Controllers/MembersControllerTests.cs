@@ -204,4 +204,99 @@ public class MembersControllerTests
     }
 
     #endregion CreateMember
+
+    #region UpdateMember
+    // Test: UpdateMember_ReturnsNotFound_WhenMemberDoesNotExist
+    [Fact]
+    public void UpdateMember_ReturnsNotFound_WhenMemberDoesNotExist()
+    {
+        // Arrange - Príprava testovacích dát
+
+        // Definovanie ID člena, ktorý neexistuje
+        int memberId = 1;
+
+        // Vytvorenie DTO objektu s údajmi pre aktualizáciu (môže byť akýkoľvek)
+        var memberRequest = new MemberDto
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            PersonalId = "123456789",
+            DateOfBirth = new DateTime(1990, 1, 1)
+        };
+
+        // Nastavenie mock objektov
+
+        // Mockovanie metódy MemberExists(id) tak, aby vrátila false, čo znamená, že člen neexistuje
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(false);
+
+        // Act - Volanie testovanej metódy
+
+        // Voláme metódu UpdateMember na kontroléri s daným ID a DTO objektom
+        var result = _membersController.UpdateMember(memberId, memberRequest);
+
+        // Assert - Overenie výsledku
+
+        // Overíme, že výsledok je typu NotFoundObjectResult
+        var notFoundResult = Xunit.Assert.IsType<NotFoundObjectResult>(result);
+
+        // Overíme, že obsah NotFoundObjectResult obsahuje správnu správu
+        Xunit.Assert.Equal($"Member with id {memberId} does not exist", notFoundResult.Value);
+    }
+
+    [Fact]
+    public void UpdateMember_ReturnsOk_WhenMemberExistsAndModelIsValid()
+    {
+        // Arrange - Príprava testovacích dát
+
+        // Definovanie ID člena, ktorý bude aktualizovaný
+        int memberId = 1;
+
+        // Vytvorenie DTO objektu s novými údajmi pre člena
+        var memberRequest = new MemberDto
+        {
+            FirstName = "John", // Nové meno
+            LastName = "Doe", // Nové priezvisko
+            PersonalId = "123456789", // Nové osobné ID
+            DateOfBirth = new DateTime(1990, 1, 1) // Nový dátum narodenia
+        };
+
+        // Vytvorenie existujúceho člena, ktorý sa bude aktualizovať
+        var existingMember = new Member
+        {
+            Id = memberId, // ID člena
+            FirstName = "Jane", // Pôvodné meno
+            LastName = "Smith", // Pôvodné priezvisko
+            PersonalId = "987654321", // Pôvodné osobné ID
+            DateOfBirth = new DateTime(1985, 5, 20) // Pôvodný dátum narodenia
+        };
+
+        // Nastavenie mock objektov
+
+        // Mockovanie metódy MemberExists(id) tak, aby vrátila true, čo znamená, že člen existuje
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
+
+        // Mockovanie metódy GetById(id) tak, aby vrátila existujúceho člena
+        _mockMemberRepository.Setup(repo => repo.GetById(memberId)).Returns(existingMember);
+
+        // Mockovanie metódy Update(member) tak, aby bola overiteľná (Verifiable)
+        _mockMemberRepository.Setup(repo => repo.Update(It.IsAny<Member>())).Verifiable();
+
+        // Act - Volanie testovanej metódy
+
+        // Voláme metódu UpdateMember na kontroléri s daným ID a DTO objektom
+        var result = _membersController.UpdateMember(memberId, memberRequest);
+
+        // Assert - Overenie výsledku
+
+        // Overíme, že výsledok je typu OkObjectResult
+        var okResult = Xunit.Assert.IsType<OkObjectResult>(result);
+
+        // Overíme, že obsah OkObjectResult obsahuje správnu správu
+        Xunit.Assert.Equal($"Member with id {memberId} was successfully updated", okResult.Value);
+
+        // Overíme, že metóda Update bola volaná presne raz s akýmkoľvek Member objektom
+        _mockMemberRepository.Verify(repo => repo.Update(It.IsAny<Member>()), Times.Once);
+    }
+
+    #endregion UpdateMember
 }
