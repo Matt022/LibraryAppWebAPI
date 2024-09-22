@@ -1,6 +1,6 @@
 ﻿using LibraryAppWebAPI.Models;
-using LibraryAppWebAPI.Repository.Interfaces;
 using LibraryAppWebAPI.Service.IServices;
+using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Service;
 

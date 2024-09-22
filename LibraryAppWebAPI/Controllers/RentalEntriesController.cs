@@ -4,8 +4,8 @@ using Swashbuckle.AspNetCore.Annotations;
 
 using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Models.DTOs;
-using LibraryAppWebAPI.Repository.Interfaces;
 using LibraryAppWebAPI.Service.IServices;
+using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Controllers;
 

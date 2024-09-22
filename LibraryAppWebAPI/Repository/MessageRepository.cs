@@ -1,35 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 
-using LibraryAppWebAPI.DataContext;
 using LibraryAppWebAPI.Models;
+using LibraryAppWebAPI.DataContext;
 using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Repository;
 
-public class MessageRepository : IMessageRepository
+public class MessageRepository(LibraryContext context, IMemberRepository memberRepository) : IMessageRepository
 {
-    private readonly LibraryContext _context;
-    private readonly IMemberRepository _memberRepository;
-
-    public MessageRepository(LibraryContext context, IMemberRepository memberRepository)
-    {
-        _context = context;
-        _memberRepository = memberRepository;
-        TurnOffIdentityCache();
-    }
-
-    public void TurnOffIdentityCache()
-    {
-        _context.TurnOffIdentityCache();
-    }
-
     public IEnumerable<Message> GetAll()
     {
-        List<Message> messages = _context.Messages.ToList();
+        List<Message> messages = context.Messages.ToList();
         foreach (Message message in messages)
         {
-            Member member = _memberRepository.GetById(message.MemberId);
+            Member member = memberRepository.GetById(message.MemberId);
             message.Member = member;
         }
         return messages;
@@ -37,9 +22,9 @@ public class MessageRepository : IMessageRepository
 
     public Message GetById(int id)
     {
-        Message? message = _context.Messages.AsNoTracking().FirstOrDefault(x => x.Id == id);
+        Message? message = context.Messages.AsNoTracking().FirstOrDefault(x => x.Id == id);
         {
-            Member member = _memberRepository.GetById(message!.MemberId);
+            Member member = memberRepository.GetById(message!.MemberId);
             message.Member = member;
         }
         return message;
@@ -47,17 +32,17 @@ public class MessageRepository : IMessageRepository
 
     public Message Create(Message entity)
     {
-        var message = _context.Messages.Add(entity);
+        var message = context.Messages.Add(entity);
 
-        _context.SaveChanges();
+        context.SaveChanges();
 
         return message.Entity;
     }
 
     public void Update(Message entity)
     {
-        _context.Messages.Update(entity);
-        _context.SaveChanges();
+        context.Messages.Update(entity);
+        context.SaveChanges();
     }
 
     public Message Delete(int id)
@@ -65,19 +50,19 @@ public class MessageRepository : IMessageRepository
         Message message = GetById(id);
         if (message is null) return null;
 
-        var result = _context.Messages.Remove(message);
+        var result = context.Messages.Remove(message);
 
-        _context.SaveChanges();
+        context.SaveChanges();
         return result.Entity;
     }
 
     public bool MessageExists(int id)
     {
-        return _context.Messages.Any(c => c.Id == id);
+        return context.Messages.Any(c => c.Id == id);
     }
 
     public IEnumerable<Message> Find(Expression<Func<Message, bool>> expression)
     {
-        return _context.Messages.Where(expression);
+        return context.Messages.Where(expression);
     }
 }
