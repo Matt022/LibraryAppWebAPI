@@ -3,10 +3,10 @@ using Xunit;
 using Microsoft.AspNetCore.Mvc;
 
 using LibraryAppWebAPI.Models;
+using LibraryAppWebAPI.Models.DTOs;
 using LibraryAppWebAPI.Controllers;
 using LibraryAppWebAPI.Service.IServices;
 using LibraryAppWebAPI.Repository.Interfaces;
-using LibraryAppWebAPI.Models.DTOs;
 
 namespace LibraryAppWebAPITests.Controllers;
 

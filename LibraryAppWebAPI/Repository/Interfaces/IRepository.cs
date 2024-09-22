@@ -13,6 +13,4 @@ public interface IRepository<T> where T : EntityBase
     void Update(T entity);
 
     T GetById(int id);
-
-    void TurnOffIdentityCache();
 }

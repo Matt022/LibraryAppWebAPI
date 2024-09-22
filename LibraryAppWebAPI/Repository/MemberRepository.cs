@@ -4,24 +4,11 @@ using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Repository;
 
-public class MemberRepository : IMemberRepository
+public class MemberRepository(LibraryContext context) : IMemberRepository
 {
-    private readonly LibraryContext _context;
-
-    public MemberRepository(LibraryContext context)
-    {
-        _context = context;
-        TurnOffIdentityCache();
-    }
-
-    public void TurnOffIdentityCache()
-    {
-        _context.TurnOffIdentityCache();
-    }
-
     public IEnumerable<Member> GetAll()
     {
-        var members = _context.Members.ToList();
+        var members = context.Members.ToList();
         foreach (var member in members)
         {
             member.DateOfBirth = member.DateOfBirth.Date;
@@ -31,8 +18,8 @@ public class MemberRepository : IMemberRepository
 
     public Member Create(Member entity)
     {
-        var member = _context.Members.Add(entity);
-        _context.SaveChanges();
+        var member = context.Members.Add(entity);
+        context.SaveChanges();
         return member.Entity;
     }
 
@@ -41,26 +28,25 @@ public class MemberRepository : IMemberRepository
         Member member = GetById(id);
         if (member is null) return null;
 
-        var result = _context.Members.Remove(member);
-        _context.SaveChanges();
+        var result = context.Members.Remove(member);
+        context.SaveChanges();
 
         return result.Entity;
     }
 
-
     public Member GetById(int id)
     {
-        return _context.Members.SingleOrDefault(x => x.Id == id)!;
+        return context.Members.SingleOrDefault(x => x.Id == id)!;
     }
 
     public void Update(Member entity)
     {
-        _context.Members.Update(entity);
-        _context.SaveChanges();
+        context.Members.Update(entity);
+        context.SaveChanges();
     }
 
     public bool MemberExists(int id)
     {
-        return _context.Members.Any(c => c.Id == id);
+        return context.Members.Any(c => c.Id == id);
     }
 }

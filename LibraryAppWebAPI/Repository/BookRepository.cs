@@ -4,30 +4,17 @@ using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Repository;
 
-public class BookRepository : IBookRepository
+public class BookRepository(LibraryContext context) : IBookRepository
 {
-    private readonly LibraryContext _context;
-
-    public BookRepository(LibraryContext context)
-    {
-        _context = context;
-        TurnOffIdentityCache();
-    }
-
-    public void TurnOffIdentityCache()
-    {
-        _context.TurnOffIdentityCache();
-    }
-
     public IEnumerable<Book> GetAll()
     {
-        return _context.Book.ToList();
+        return context.Book.ToList();
     }
 
     public Book Create(Book entity)
     {
-        var result = _context.Book.Add(entity);
-        _context.SaveChanges();
+        var result = context.Book.Add(entity);
+        context.SaveChanges();
 
         return result.Entity;
     }
@@ -38,15 +25,15 @@ public class BookRepository : IBookRepository
 
         if (entity == null) return null;
 
-        var result = _context.Book.Remove(entity);
-        _context.SaveChanges();
+        var result = context.Book.Remove(entity);
+        context.SaveChanges();
 
         return result.Entity;
     }
 
     public Book GetById(int id)
     {
-        Book? result = _context.Book.FirstOrDefault(b => b.Id == id);
+        Book? result = context.Book.FirstOrDefault(b => b.Id == id);
         return result!;
     }
 
@@ -66,12 +53,12 @@ public class BookRepository : IBookRepository
 
     public void Update(Book entity)
     { 
-        _context.Book.Update(entity);
-        _context.SaveChanges();
+        context.Book.Update(entity);
+        context.SaveChanges();
     }
 
     public bool BookExists(int id)
     {
-        return _context.Book.Any(c => c.Id == id);
+        return context.Book.Any(c => c.Id == id);
     }
 }

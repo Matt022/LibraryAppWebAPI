@@ -4,30 +4,17 @@ using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Repository;
 
-public class DvdRepository : IDvdRepository
+public class DvdRepository(LibraryContext context) : IDvdRepository
 {
-    private readonly LibraryContext _context;
-
-    public DvdRepository(LibraryContext context)
-    {
-        _context = context;
-        TurnOffIdentityCache();
-    }
-
-    public void TurnOffIdentityCache()
-    {
-        _context.TurnOffIdentityCache();
-    }
-
     public IEnumerable<Dvd> GetAll()
     {
-        return _context.Dvds.ToList();
+        return context.Dvds.ToList();
     }
 
     public Dvd Create(Dvd entity)
     {
-        var result = _context.Dvds.Add(entity);
-        _context.SaveChanges();
+        var result = context.Dvds.Add(entity);
+        context.SaveChanges();
 
         return result.Entity;
     }
@@ -38,15 +25,15 @@ public class DvdRepository : IDvdRepository
 
         if (entity == null) return null;
 
-        var result = _context.Dvds.Remove(entity);
-        _context.SaveChanges();
+        var result = context.Dvds.Remove(entity);
+        context.SaveChanges();
 
         return result.Entity;
     }
 
     public Dvd GetById(int id)
     {
-        return _context.Dvds.FirstOrDefault(b => b.Id == id)!;
+        return context.Dvds.FirstOrDefault(b => b.Id == id)!;
     }
 
     public bool IsDvdAvailable(int id)
@@ -65,12 +52,12 @@ public class DvdRepository : IDvdRepository
 
     public void Update(Dvd entity)
     {
-        _context.Dvds.Update(entity);
-        _context.SaveChanges();
+        context.Dvds.Update(entity);
+        context.SaveChanges();
     }
 
     public bool DvdExists(int id)
     {
-        return _context.Dvds.Any(c => c.Id == id);
+        return context.Dvds.Any(c => c.Id == id);
     }
 }

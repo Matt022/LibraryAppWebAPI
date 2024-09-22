@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 
 using LibraryAppWebAPI.Base;
 using LibraryAppWebAPI.Models;
@@ -8,42 +8,23 @@ using LibraryAppWebAPI.Repository.Interfaces;
 
 namespace LibraryAppWebAPI.Repository;
 
-public class QueueItemRepository : IQueueItemRepository
+public class QueueItemRepository(LibraryContext context, IMemberRepository memberRepository, IBookRepository bookRepository, IDvdRepository dvdRepository) : IQueueItemRepository
 {
-    private readonly LibraryContext _context;
-    private readonly IMemberRepository _memberRepository;
-    private readonly IBookRepository _bookRepository;
-    private readonly IDvdRepository _dvdRepository;
-
-    public QueueItemRepository(LibraryContext context, IMemberRepository memberRepository, IBookRepository bookRepository, IDvdRepository dvdRepository)
-    {
-        _context = context;
-        _memberRepository = memberRepository;
-        _bookRepository = bookRepository;
-        _dvdRepository = dvdRepository;
-        TurnOffIdentityCache();
-    }
-
-    public void TurnOffIdentityCache()
-    {
-        _context.TurnOffIdentityCache();
-    }
-
     public IEnumerable<QueueItem> GetAll()
     {
-        List<QueueItem> queueItems = _context.QueueItems.Include(m => m.Member).Include(t => t.Title).ToList();
+        List<QueueItem> queueItems = context.QueueItems.Include(m => m.Member).Include(t => t.Title).ToList();
         foreach (QueueItem queueItem in queueItems)
         {
-            Member member = _memberRepository.GetById(queueItem.MemberId);
+            Member member = memberRepository.GetById(queueItem.MemberId);
             queueItem.Member = member;
 
-            if (_bookRepository.BookExists(queueItem.TitleId))
+            if (bookRepository.BookExists(queueItem.TitleId))
             {
-                Book book = _bookRepository.GetById(queueItem.TitleId);
+                Book book = bookRepository.GetById(queueItem.TitleId);
                 queueItem.Title = book;
-            } else if (_dvdRepository.DvdExists(queueItem.TitleId))
+            } else if (dvdRepository.DvdExists(queueItem.TitleId))
             {
-                Dvd dvd = _dvdRepository.GetById(queueItem.TitleId);
+                Dvd dvd = dvdRepository.GetById(queueItem.TitleId);
                 queueItem.Title = dvd;
             }
         }
@@ -53,21 +34,21 @@ public class QueueItemRepository : IQueueItemRepository
 
     public QueueItem GetById(int id)
     {
-        QueueItem? queueItem = _context.QueueItems.AsNoTracking().FirstOrDefault(b => b.Id == id);
+        QueueItem? queueItem = context.QueueItems.AsNoTracking().FirstOrDefault(b => b.Id == id);
         {
             if (queueItem == null) return null;
 
-            Member member = _memberRepository.GetById(queueItem.MemberId);
+            Member member = memberRepository.GetById(queueItem.MemberId);
             queueItem.Member = member;
 
-            if (_bookRepository.BookExists(queueItem.TitleId))
+            if (bookRepository.BookExists(queueItem.TitleId))
             {
-                Book book = _bookRepository.GetById(queueItem.TitleId);
+                Book book = bookRepository.GetById(queueItem.TitleId);
                 queueItem.Title = book;
             }
-            else if (_dvdRepository.DvdExists(queueItem.TitleId))
+            else if (dvdRepository.DvdExists(queueItem.TitleId))
             {
-                Dvd dvd = _dvdRepository.GetById(queueItem.TitleId);
+                Dvd dvd = dvdRepository.GetById(queueItem.TitleId);
                 queueItem.Title = dvd;
             }
         }
@@ -76,21 +57,21 @@ public class QueueItemRepository : IQueueItemRepository
 
     public QueueItem GetByTitleId(int id)
     {
-        QueueItem? queueItem = _context.QueueItems.AsNoTracking().FirstOrDefault(b => b.TitleId == id);
+        QueueItem? queueItem = context.QueueItems.AsNoTracking().FirstOrDefault(b => b.TitleId == id);
         {
             if (queueItem == null) return null;
 
-            Member member = _memberRepository.GetById(queueItem.MemberId);
+            Member member = memberRepository.GetById(queueItem.MemberId);
             queueItem.Member = member;
 
-            if (_bookRepository.BookExists(queueItem.TitleId))
+            if (bookRepository.BookExists(queueItem.TitleId))
             {
-                Book book = _bookRepository.GetById(queueItem.TitleId);
+                Book book = bookRepository.GetById(queueItem.TitleId);
                 queueItem.Title = book;
             }
-            else if (_dvdRepository.DvdExists(queueItem.TitleId))
+            else if (dvdRepository.DvdExists(queueItem.TitleId))
             {
-                Dvd dvd = _dvdRepository.GetById(queueItem.TitleId);
+                Dvd dvd = dvdRepository.GetById(queueItem.TitleId);
                 queueItem.Title = dvd;
             }
         }
@@ -106,7 +87,7 @@ public class QueueItemRepository : IQueueItemRepository
 
             foreach (var queueItem in queueItems)
             {
-                Member member = _memberRepository.GetById(queueItem.MemberId);
+                Member member = memberRepository.GetById(queueItem.MemberId);
                 queueItem.Member = member;
                 queueItem.Title = GetBookOrDvd(queueItem.TitleId);
             }
@@ -117,58 +98,58 @@ public class QueueItemRepository : IQueueItemRepository
 
     public QueueItem Create(QueueItem entity)
     {
-        var result = _context.QueueItems.Add(entity);
-        _context.SaveChanges();
+        var result = context.QueueItems.Add(entity);
+        context.SaveChanges();
 
         return result.Entity;
     }
 
     public void Update(QueueItem entity)
     {
-        _context.QueueItems.Update(entity);
-        _context.SaveChanges();
+        context.QueueItems.Update(entity);
+        context.SaveChanges();
     }
 
     public QueueItem Delete(int id)
     {
-        QueueItem? entity = _context.QueueItems.FirstOrDefault(b => b.Id == id);
+        QueueItem? entity = context.QueueItems.FirstOrDefault(b => b.Id == id);
 
         if (entity == null) return null;
 
-        var result = _context.QueueItems.Remove(entity);
-        _context.SaveChanges();
+        var result = context.QueueItems.Remove(entity);
+        context.SaveChanges();
 
         return result.Entity;
     }
 
     public bool QueueItemExists(int id)
     {
-        return _context.QueueItems.Any(c => c.Id == id);
+        return context.QueueItems.Any(c => c.Id == id);
     }
 
     public bool QueueItemByMemberIdExist(int memberId)
     {
-        bool rentalEntriesByTitleId = _context.QueueItems.Any(e => e.MemberId == memberId);
+        bool rentalEntriesByTitleId = context.QueueItems.Any(e => e.MemberId == memberId);
 
         return rentalEntriesByTitleId;
     }
 
     public IEnumerable<QueueItem> Find(Expression<Func<QueueItem, bool>> expression)
     {
-        return _context.QueueItems.Where(expression).Include(i => i.Title).Include(i => i.Member);
+        return context.QueueItems.Where(expression).Include(i => i.Title).Include(i => i.Member);
     }
 
     public Title GetBookOrDvd(int titleId)
     {
         Title? title = null;
-        if (_bookRepository.BookExists(titleId))
+        if (bookRepository.BookExists(titleId))
         {
-            title = _bookRepository.GetById(titleId);
+            title = bookRepository.GetById(titleId);
             return title;
         }
-        else if (_dvdRepository.DvdExists(titleId))
+        else if (dvdRepository.DvdExists(titleId))
         {
-            title = _dvdRepository.GetById(titleId);
+            title = dvdRepository.GetById(titleId);
             return title;
         }
         return title!;
