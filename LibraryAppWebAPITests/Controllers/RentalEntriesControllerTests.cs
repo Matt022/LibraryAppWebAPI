@@ -132,4 +132,81 @@ public class RentalEntriesControllerTests
         Xunit.Assert.Equal("There is no rental entry past due", notFoundResult.Value);
     }
     #endregion GetRentalEntriesPastDue
+
+
+    #region GetUnreturnedRentalEntries
+
+    // Test pre prípad, keď existujú nevrátené položky
+    [Fact]
+    public void GetUnreturnedRentalEntries_ReturnsOk_WhenUnreturnedEntriesExist()
+    {
+        // Arrange
+        var unreturnedRentalEntries = new List<RentalEntry>
+        {
+            new ()
+            {
+                Id = 1,
+                MemberId = 101,
+                RentedDate = DateTime.Now.AddDays(-10),
+                TitleId = 1001,
+                TitleType = eTitleType.Book,
+                ReturnDate = null, // Nie je vrátená
+                MaxReturnDate = DateTime.Now.AddDays(-5),
+                TimesProlongued = 0
+            },
+            new ()
+            {
+                Id = 2,
+                MemberId = 102,
+                RentedDate = DateTime.Now.AddDays(-15),
+                TitleId = 1002,
+                TitleType = eTitleType.Dvd,
+                ReturnDate = null, // Nie je vrátená
+                MaxReturnDate = DateTime.Now.AddDays(-10),
+                TimesProlongued = 1
+            }
+        };
+
+        _mockRentalEntryRepository.Setup(repo => repo.GetUnreturnedRentalEntries()).Returns(unreturnedRentalEntries);
+
+        // Act
+        var result = _rentalEntriesController.GetUnreturnedRentalEntries();
+
+        // Assert
+        var okResult = Xunit.Assert.IsType<OkObjectResult>(result.Result);
+        var returnedEntries = Xunit.Assert.IsType<List<RentalEntry>>(okResult.Value);
+        Xunit.Assert.Equal(2, returnedEntries.Count);
+    }
+
+    // Test pre prípad, keď neexistujú nevrátené položky
+    [Fact]
+    public void GetUnreturnedRentalEntries_ReturnsNotFound_WhenNoUnreturnedEntriesExist()
+    {
+        // Arrange
+        _mockRentalEntryRepository.Setup(repo => repo.GetUnreturnedRentalEntries()).Returns([]);
+
+        // Act
+        var result = _rentalEntriesController.GetUnreturnedRentalEntries();
+
+        // Assert
+        var notFoundResult = Xunit.Assert.IsType<NotFoundObjectResult>(result.Result);
+        Xunit.Assert.Equal("There is no unreturned rental entries", notFoundResult.Value);
+    }
+
+    // Test pre prípad, keď repo vráti null
+    [Fact]
+    public void GetUnreturnedRentalEntries_ReturnsNotFound_WhenRentalEntriesAreNull()
+    {
+        // Arrange
+        _mockRentalEntryRepository.Setup(repo => repo.GetUnreturnedRentalEntries()).Returns((List<RentalEntry>)null);
+
+        // Act
+        var result = _rentalEntriesController.GetUnreturnedRentalEntries();
+
+        // Assert
+        var notFoundResult = Xunit.Assert.IsType<NotFoundObjectResult>(result.Result);
+        Xunit.Assert.Equal("There is no unreturned rental entries", notFoundResult.Value);
+    }
+
+    #endregion GetUnreturnedRentalEntries
 }
