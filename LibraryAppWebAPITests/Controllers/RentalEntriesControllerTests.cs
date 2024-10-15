@@ -133,7 +133,6 @@ public class RentalEntriesControllerTests
     }
     #endregion GetRentalEntriesPastDue
 
-
     #region GetUnreturnedRentalEntries
 
     // Test pre prípad, keď existujú nevrátené položky
@@ -209,4 +208,99 @@ public class RentalEntriesControllerTests
     }
 
     #endregion GetUnreturnedRentalEntries
+
+    #region GetUnreturnedRentalEntriesByMemberId
+
+    // Test pre prípad, keď člen neexistuje
+    [Fact]
+    public void GetUnreturnedRentalEntriesByMemberId_ReturnsNotFound_WhenMemberDoesNotExist()
+    {
+        // Arrange
+        int memberId = 1;
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(false);
+
+        // Act
+        var result = _rentalEntriesController.GetUnreturnedRentalEntriesByMemberId(memberId);
+
+        // Assert
+        var notFoundResult = Xunit.Assert.IsType<NotFoundObjectResult>(result.Result);
+        Xunit.Assert.Equal($"Member with id {memberId} does not exist", notFoundResult.Value);
+    }
+
+    // Test pre prípad, keď člen existuje, ale nemá nevrátené položky
+    [Fact]
+    public void GetUnreturnedRentalEntriesByMemberId_ReturnsNotFound_WhenNoUnreturnedEntriesExist()
+    {
+        // Arrange
+        int memberId = 1;
+        var member = new Member { Id = memberId, FirstName = "John", LastName = "Doe" };
+
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
+        _mockMemberRepository.Setup(repo => repo.GetById(memberId)).Returns(member);
+        _mockRentalEntryRepository.Setup(repo => repo.GetUnreturnedRentalEntriesByMemberId(memberId)).Returns(new List<RentalEntry>());
+
+        // Act
+        var result = _rentalEntriesController.GetUnreturnedRentalEntriesByMemberId(memberId);
+
+        // Assert
+        var notFoundResult = Xunit.Assert.IsType<NotFoundObjectResult>(result.Result);
+        Xunit.Assert.Equal($"There is no unreturned rental entries for {member.FullName()}", notFoundResult.Value);
+    }
+
+    // Test pre prípad, keď člen existuje a má nevrátené položky
+    [Fact]
+    public void GetUnreturnedRentalEntriesByMemberId_ReturnsOk_WhenUnreturnedEntriesExist()
+    {
+        // Arrange
+        int memberId = 1;
+        var member = new Member { Id = memberId, FirstName = "John", LastName = "Doe" };
+        var unreturnedRentalEntries = new List<RentalEntry>
+        {
+            new ()
+            {
+                Id = 1,
+                MemberId = memberId,
+                RentedDate = DateTime.Now.AddDays(-10),
+                TitleId = 1001,
+                TitleType = eTitleType.Book,
+                ReturnDate = null, // Nie je vrátená
+                MaxReturnDate = DateTime.Now.AddDays(-5),
+                TimesProlongued = 0
+            }
+        };
+
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
+        _mockMemberRepository.Setup(repo => repo.GetById(memberId)).Returns(member);
+        _mockRentalEntryRepository.Setup(repo => repo.GetUnreturnedRentalEntriesByMemberId(memberId)).Returns(unreturnedRentalEntries);
+
+        // Act
+        var result = _rentalEntriesController.GetUnreturnedRentalEntriesByMemberId(memberId);
+
+        // Assert
+        var okResult = Xunit.Assert.IsType<OkObjectResult>(result.Result);
+        var returnedEntries = Xunit.Assert.IsType<List<RentalEntry>>(okResult.Value);
+        Xunit.Assert.Single(returnedEntries);
+    }
+
+    // Test pre prípad, keď repozitár vráti null
+    [Fact]
+    public void GetUnreturnedRentalEntriesByMemberId_ReturnsNotFound_WhenRentalEntriesAreNull()
+    {
+        // Arrange
+        int memberId = 1;
+        var member = new Member { Id = memberId, FirstName = "John", LastName = "Doe" };
+
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
+        _mockMemberRepository.Setup(repo => repo.GetById(memberId)).Returns(member);
+        _mockRentalEntryRepository.Setup(repo => repo.GetUnreturnedRentalEntriesByMemberId(memberId)).Returns((List<RentalEntry>)null);
+
+        // Act
+        var result = _rentalEntriesController.GetUnreturnedRentalEntriesByMemberId(memberId);
+
+        // Assert
+        var notFoundResult = Xunit.Assert.IsType<NotFoundObjectResult>(result.Result);
+        Xunit.Assert.Equal($"There is no unreturned rental entries for {member.FullName()}", notFoundResult.Value);
+    }
+
+    #endregion GetUnreturnedRentalEntriesByMemberId
 }
