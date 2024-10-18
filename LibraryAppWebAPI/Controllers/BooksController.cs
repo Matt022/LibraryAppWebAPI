@@ -30,14 +30,10 @@ public class BooksController(IBookRepository bookRepository, IRentalEntryReposit
     // GET: api/Books/5
     [HttpGet("{id}")]
     [ProducesResponseType(200, Type = typeof(Book))]
-    [ProducesResponseType(400, Type = typeof(BadRequest))]
     [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Get a book by Id", Tags = ["Books"])]
     public ActionResult<Book> GetBook(int id)
     {
-        if (id <= 0)
-            return BadRequest();
-
         if (!bookRepository.BookExists(id))
             return NotFound($"Book with id {id} does not exist");
 
@@ -77,13 +73,13 @@ public class BooksController(IBookRepository bookRepository, IRentalEntryReposit
     [SwaggerOperation(Summary = "Update a book", Tags = ["Books"])]
     public IActionResult UpdateBook(int id, [FromBody] BookDto bookRequest)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         if (!bookRepository.BookExists(id))
         {
             return NotFound($"Book with id {id} does not exist");
-        }
-            
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        }    
 
         Book book = bookRepository.GetById(id);
         {
