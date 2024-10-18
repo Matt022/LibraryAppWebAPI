@@ -3,10 +3,11 @@ using Xunit;
 using Microsoft.AspNetCore.Mvc;
 
 using LibraryAppWebAPI.Models;
+using LibraryAppWebAPI.Models.DTOs;
+using LibraryAppWebAPI.Base.Enums;
 using LibraryAppWebAPI.Controllers;
 using LibraryAppWebAPI.Service.IServices;
 using LibraryAppWebAPI.Repository.Interfaces;
-using LibraryAppWebAPI.Base.Enums;
 
 namespace LibraryAppWebAPITests.Controllers;
 
@@ -14,7 +15,7 @@ public class RentalEntriesControllerTests
 {
     private readonly Mock<IRentalEntryRepository> _mockRentalEntryRepository;
     private readonly Mock<IMemberRepository> _mockMemberRepository;
-    private readonly Mock<IRentalEntryService> _mockRentalEntryServiceRepository;
+    private readonly Mock<IRentalEntryService> _mockRentalEntryService;
 
     private readonly RentalEntriesController _rentalEntriesController;
 
@@ -22,9 +23,9 @@ public class RentalEntriesControllerTests
     {
         _mockRentalEntryRepository = new Mock<IRentalEntryRepository>();
         _mockMemberRepository = new Mock<IMemberRepository>();
-        _mockRentalEntryServiceRepository = new Mock<IRentalEntryService>();
+        _mockRentalEntryService = new Mock<IRentalEntryService>();
 
-        _rentalEntriesController = new RentalEntriesController(_mockRentalEntryRepository.Object, _mockMemberRepository.Object, _mockRentalEntryServiceRepository.Object);
+        _rentalEntriesController = new RentalEntriesController(_mockRentalEntryRepository.Object, _mockMemberRepository.Object, _mockRentalEntryService.Object);
     }
 
     #region GetRentalEntries
@@ -303,4 +304,67 @@ public class RentalEntriesControllerTests
     }
 
     #endregion GetUnreturnedRentalEntriesByMemberId
+
+    #region RentTitle
+
+    // Test pre nevalidný model
+    [Fact]
+    public void RentTitle_ReturnsBadRequest_WhenModelIsInvalid()
+    {
+        // Arrange
+        var invalidDto = new RentalEntryDto(); // Chýbajúce povinné polia
+
+        _rentalEntriesController.ModelState.AddModelError("MemberId", "Required");
+
+        // Act
+        var result = _rentalEntriesController.RentTitle(invalidDto);
+
+        // Assert
+        var badRequestResult = Xunit.Assert.IsType<BadRequestObjectResult>(result.Result);
+        Xunit.Assert.IsType<SerializableError>(badRequestResult.Value);
+    }
+
+    // Test pre prípad, keď sa nemôže prenajať titul
+    [Fact]
+    public void RentTitle_ReturnsBadRequest_WhenCannotRentTitle()
+    {
+        // Arrange
+        var validDto = new RentalEntryDto { MemberId = 1, TitleId = 1001 };
+        string message = "Member cannot rent this title due to restrictions";
+        var canRentDictionary = new Dictionary<bool, string> { { false, message } };
+
+        _mockRentalEntryService
+            .Setup(service => service.CanRent(validDto, It.IsAny<string>()))
+            .Returns(canRentDictionary);
+
+        // Act
+        var result = _rentalEntriesController.RentTitle(validDto);
+
+        // Assert
+        var badRequestResult = Xunit.Assert.IsType<BadRequestObjectResult>(result.Result);
+        Xunit.Assert.Equal(message, badRequestResult.Value);
+    }
+
+    // Test pre úspešné prenajatie titulu
+    [Fact]
+    public void RentTitle_ReturnsOk_WhenCanRentTitle()
+    {
+        // Arrange
+        var validDto = new RentalEntryDto { MemberId = 1, TitleId = 1001 };
+        string message = "Title rented successfully";
+        var canRentDictionary = new Dictionary<bool, string> { { true, message } };
+
+        _mockRentalEntryService
+            .Setup(service => service.CanRent(validDto, It.IsAny<string>()))
+            .Returns(canRentDictionary);
+
+        // Act
+        var result = _rentalEntriesController.RentTitle(validDto);
+
+        // Assert
+        var okResult = Xunit.Assert.IsType<OkObjectResult>(result.Result);
+        Xunit.Assert.Equal(message, okResult.Value);
+    }
+
+    #endregion RentTitle   
 }

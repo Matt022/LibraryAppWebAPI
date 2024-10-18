@@ -30,7 +30,6 @@ public class DvdsController(IDvdRepository dvdRepository, IRentalEntryRepository
     // GET: api/Dvds/5
     [HttpGet("{id}")]
     [ProducesResponseType(200, Type = typeof(OkResult))]
-    [ProducesResponseType(400, Type = typeof(BadRequest))]
     [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Get dvd by id", Tags = ["Dvds"])]
     public ActionResult<Dvd> GetDvd(int id)
@@ -45,7 +44,6 @@ public class DvdsController(IDvdRepository dvdRepository, IRentalEntryRepository
 
     // POST: api/Dvds
     [HttpPost]
-    [ProducesResponseType(200, Type = typeof(OkResult))]
     [ProducesResponseType(201, Type = typeof(Created))]
     [ProducesResponseType(400, Type = typeof(BadRequest))]
     [SwaggerOperation(Summary = "Create a dvd", Tags = ["Dvds"])]
@@ -76,11 +74,11 @@ public class DvdsController(IDvdRepository dvdRepository, IRentalEntryRepository
     [SwaggerOperation(Summary = "Update a dvd", Tags = ["Dvds"])]
     public IActionResult UpdateDvd(int id, [FromBody] DvdDto dvdRequest)
     {
-        if (!dvdRepository.DvdExists(id))
-            return NotFound($"Dvd with id {id} does not exist");
-
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
+        if (!dvdRepository.DvdExists(id))
+            return NotFound($"Dvd with id {id} does not exist");
 
         Dvd dvd = dvdRepository.GetById(id);
         {
@@ -107,7 +105,6 @@ public class DvdsController(IDvdRepository dvdRepository, IRentalEntryRepository
     // DELETE: api/Dvds/5
     [HttpDelete("{id}")]
     [ProducesResponseType(200, Type = typeof(OkResult))]
-    [ProducesResponseType(400, Type = typeof(BadRequest))]
     [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Delete a dvd by id", Tags = ["Dvds"])]
     public IActionResult DeleteDvd(int id)

@@ -55,9 +55,9 @@ public class MembersController(IMemberRepository memberRepository, IMessagingSer
         Member member = new();
         {
             member.DateOfBirth = memberRequest.DateOfBirth;
-            member.FirstName = memberRequest.FirstName;
-            member.LastName = memberRequest.LastName;
-            member.PersonalId = memberRequest.PersonalId;
+            member.FirstName = memberRequest.FirstName!;
+            member.LastName = memberRequest.LastName!;
+            member.PersonalId = memberRequest.PersonalId!;
         }
 
         memberRepository.Create(member);
@@ -76,18 +76,18 @@ public class MembersController(IMemberRepository memberRepository, IMessagingSer
     [SwaggerOperation(Summary = "Update a member", Tags = ["Members"])]
     public IActionResult UpdateMember(int id, [FromBody] MemberDto memberRequest)
     {
-        if (!memberRepository.MemberExists(id))
-            return NotFound($"Member with id {id} does not exist");
-
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
+        if (!memberRepository.MemberExists(id))
+            return NotFound($"Member with id {id} does not exist");
 
         Member member = memberRepository.GetById(id);
         {
             member.DateOfBirth = memberRequest.DateOfBirth;
-            member.FirstName = memberRequest.FirstName;
-            member.LastName = memberRequest.LastName;
-            member.PersonalId = memberRequest.PersonalId;
+            member.FirstName = memberRequest.FirstName!;
+            member.LastName = memberRequest.LastName!;
+            member.PersonalId = memberRequest.PersonalId!;
         }
 
         memberRepository.Update(member);

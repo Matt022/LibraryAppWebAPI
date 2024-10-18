@@ -86,7 +86,6 @@ public class RentalEntriesController(IRentalEntryRepository rentalEntryRepositor
     // POST: api/RentalEntries
     [HttpPost]
     [ProducesResponseType(200, Type = typeof(OkResult))]
-    [ProducesResponseType(201, Type = typeof(Created))]
     [ProducesResponseType(400, Type = typeof(BadRequest))]
     [SwaggerOperation(Summary = "Create a rent or rent a title", Tags = ["RentalEntries"])]
     public ActionResult<Member> RentTitle([FromBody] RentalEntryDto rentalEntryCreate)
@@ -119,7 +118,6 @@ public class RentalEntriesController(IRentalEntryRepository rentalEntryRepositor
     [HttpPut("ReturnTitle/{id}")]
     [ProducesResponseType(200, Type = typeof(OkResult))]
     [ProducesResponseType(400, Type = typeof(BadRequest))]
-    [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Return a title", Tags = ["RentalEntries"])]
     public IActionResult ReturnTitle(int id, [FromBody] ReturnTitleDto returnTitle)
     {

@@ -28,7 +28,6 @@ public class QueueItemsController(IQueueItemRepository queueItemRepository, IMem
 
     [HttpGet("Member/{memberId}")]
     [ProducesResponseType(200, Type = typeof(QueueItem))]
-    [ProducesResponseType(400, Type = typeof(BadRequest))]
     [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Get all queue items by title id", Tags = ["QueueItems"])]
     public ActionResult<List<QueueItem>> GetAllQueueItemsByMember(int memberId)
