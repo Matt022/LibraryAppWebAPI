@@ -148,7 +148,6 @@ public class RentalEntriesController(IRentalEntryRepository rentalEntryRepositor
     [HttpPut("ProlongTitle/{id}")]
     [ProducesResponseType(200, Type = typeof(OkResult))]
     [ProducesResponseType(400, Type = typeof(BadRequest))]
-    [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Prolong a title", Tags = ["RentalEntries"])]
     public IActionResult ProlongTitle(int id, [FromBody] ReturnTitleDto prolongTitle)
     {
