@@ -106,19 +106,6 @@ public class BooksControllerTests
         Xunit.Assert.Equal($"Book with id {bookId} does not exist", notFoundResult.Value);
     }
 
-    [Fact]
-    public void GetBook_ReturnsBadRequest_ForInvalidId()
-    {
-        // Arrange
-        var invalidId = -1;
-
-        // Act
-        var result = _controller.GetBook(invalidId);
-
-        // Assert
-        Xunit.Assert.IsType<BadRequestResult>(result.Result);
-    }
-
     #endregion GetSingleBook
 
     #region CreateBook

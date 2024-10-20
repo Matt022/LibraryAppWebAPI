@@ -367,4 +367,86 @@ public class RentalEntriesControllerTests
     }
 
     #endregion RentTitle   
+
+    #region ReturnTitle
+
+    // 1. Test pre úspešné vrátenie titulu
+    [Fact]
+    public void ReturnTitle_Valid_ReturnsOk()
+    {
+        // Arrange
+        int rentalEntryId = 1;
+        var returnTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 2 };
+        string successMessage = "Title returned successfully";
+
+        var validationResult = new Dictionary<bool, string>
+        {
+            { true, successMessage }
+        };
+
+        _mockRentalEntryService.Setup(service => service.ReturnTitleWithValidation(
+            rentalEntryId,
+            returnTitleDto.MemberId,
+            returnTitleDto,
+            It.IsAny<string>()))
+            .Returns(validationResult);
+
+        // Act
+        var result = _rentalEntriesController.ReturnTitle(rentalEntryId, returnTitleDto) as OkObjectResult;
+
+        // Assert
+        Xunit.Assert.NotNull(result);
+        Xunit.Assert.Equal(200, result.StatusCode);
+        Xunit.Assert.Equal(successMessage, result.Value);
+    }
+
+    // 2. Test pre nevalidný model (BadRequest)
+    [Fact]
+    public void ReturnTitle_InvalidModel_ReturnsBadRequest()
+    {
+        // Arrange
+        int rentalEntryId = 1;
+        var returnTitleDto = new ReturnTitleDto(); // Chýbajúce povinné údaje spôsobia nevalidnosť
+
+        _rentalEntriesController.ModelState.AddModelError("MemberId", "MemberId is required");
+
+        // Act
+        var result = _rentalEntriesController.ReturnTitle(rentalEntryId, returnTitleDto) as BadRequestObjectResult;
+
+        // Assert
+        Xunit.Assert.NotNull(result);
+        Xunit.Assert.Equal(400, result.StatusCode);
+        Xunit.Assert.IsType<SerializableError>(result.Value);
+    }
+
+    // Test - Cannot return title (Validation failed)
+    [Fact]
+    public void ReturnTitle_CannotReturn_ReturnsBadRequestWithMessage()
+    {
+        // Arrange
+        var returnTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 1 };
+        string validationMessage = "Cannot return this title.";
+        var validationResponse = new Dictionary<bool, string> { { false, validationMessage } };
+
+        // Nastavenie mocku na simuláciu metódy ReturnTitleWithValidation
+        _mockRentalEntryService
+            .Setup(service => service.ReturnTitleWithValidation(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<ReturnTitleDto>(), It.IsAny<string>()))
+            .Callback((int id, int memberId, ReturnTitleDto dto, string message) => {
+                message = validationMessage; // Tu priraďujeme hodnotu výstupnému parametru
+            })
+            .Returns(validationResponse);
+
+        // Act
+        var result = _rentalEntriesController.ReturnTitle(1, returnTitleDto);
+
+        // Assert
+        var badRequestResult = Xunit.Assert.IsType<BadRequestObjectResult>(result);
+        Xunit.Assert.Equal(400, badRequestResult.StatusCode);
+        Xunit.Assert.Equal(validationMessage, badRequestResult.Value);
+    }
+    #endregion ReturnTitle
+
+    #region ProlongTitle
+
+    #endregion ProlongTitle
 }
