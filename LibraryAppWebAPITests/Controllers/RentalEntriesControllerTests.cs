@@ -448,5 +448,69 @@ public class RentalEntriesControllerTests
 
     #region ProlongTitle
 
+    [Fact]
+    public void ProlongTitle_Success_ReturnsOkWithMessage()
+    {
+        // Arrange
+        var prolongTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 1 };
+        string prolongMessage = "Title successfully prolonged.";
+        var prolongResponse = new Dictionary<bool, string> { { true, prolongMessage } };
+
+        _mockRentalEntryService
+            .Setup(service => service.ProlongRental(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<ReturnTitleDto>(), It.IsAny<string>()))
+            .Callback((int id, int memberId, ReturnTitleDto dto, string message) => {
+                message = prolongMessage;
+            })
+            .Returns(prolongResponse);
+
+        // Act
+        var result = _rentalEntriesController.ProlongTitle(1, prolongTitleDto);
+
+        // Assert
+        var okResult = Xunit.Assert.IsType<OkObjectResult>(result);
+        Xunit.Assert.Equal(200, okResult.StatusCode);
+        Xunit.Assert.Equal(prolongMessage, okResult.Value);
+    }
+
+    [Fact]
+    public void ProlongTitle_InvalidModelState_ReturnsBadRequestWithModelState()
+    {
+        // Arrange
+        var prolongTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 1 };
+        _rentalEntriesController.ModelState.AddModelError("MemberId", "MemberId is required");
+
+        // Act
+        var result = _rentalEntriesController.ProlongTitle(1, prolongTitleDto);
+
+        // Assert
+        var badRequestResult = Xunit.Assert.IsType<BadRequestObjectResult>(result);
+        Xunit.Assert.Equal(400, badRequestResult.StatusCode);
+        Xunit.Assert.IsType<SerializableError>(badRequestResult.Value);
+    }
+
+    [Fact]
+    public void ProlongTitle_CannotProlong_ReturnsBadRequestWithMessage()
+    {
+        // Arrange
+        var prolongTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 1 };
+        string prolongMessage = "Cannot prolong this title.";
+        var prolongResponse = new Dictionary<bool, string> { { false, prolongMessage } };
+
+        _mockRentalEntryService
+            .Setup(service => service.ProlongRental(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<ReturnTitleDto>(), It.IsAny<string>()))
+            .Callback((int id, int memberId, ReturnTitleDto dto, string message) => {
+                message = prolongMessage;
+            })
+            .Returns(prolongResponse);
+
+        // Act
+        var result = _rentalEntriesController.ProlongTitle(1, prolongTitleDto);
+
+        // Assert
+        var badRequestResult = Xunit.Assert.IsType<BadRequestObjectResult>(result);
+        Xunit.Assert.Equal(400, badRequestResult.StatusCode);
+        Xunit.Assert.Equal(prolongMessage, badRequestResult.Value);
+    }
+
     #endregion ProlongTitle
 }
