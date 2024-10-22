@@ -8,7 +8,7 @@ public class DvdRepository(LibraryContext context) : IDvdRepository
 {
     public IEnumerable<Dvd> GetAll()
     {
-        return context.Dvds.ToList();
+        return [.. context.Dvds];
     }
 
     public Dvd Create(Dvd entity)

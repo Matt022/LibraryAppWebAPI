@@ -11,7 +11,7 @@ public class MessageRepository(LibraryContext context, IMemberRepository memberR
 {
     public IEnumerable<Message> GetAll()
     {
-        List<Message> messages = context.Messages.ToList();
+        List<Message> messages = [.. context.Messages];
         foreach (Message message in messages)
         {
             Member member = memberRepository.GetById(message.MemberId);
