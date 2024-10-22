@@ -8,7 +8,7 @@ public class BookRepository(LibraryContext context) : IBookRepository
 {
     public IEnumerable<Book> GetAll()
     {
-        return context.Book.ToList();
+        return [.. context.Book];
     }
 
     public Book Create(Book entity)
