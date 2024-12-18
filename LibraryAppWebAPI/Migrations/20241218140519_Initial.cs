@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LibraryAppWebAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,9 +17,9 @@ namespace LibraryAppWebAPI.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PersonalId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PersonalId = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -33,13 +33,13 @@ namespace LibraryAppWebAPI.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Author = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Author = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     AvailableCopies = table.Column<int>(type: "int", nullable: false),
                     TotalAvailableCopies = table.Column<int>(type: "int", nullable: false),
-                    Discriminator = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Discriminator = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
                     NumberOfPages = table.Column<int>(type: "int", nullable: true),
-                    ISBN = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ISBN = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     PublishYear = table.Column<int>(type: "int", nullable: true),
                     NumberOfMinutes = table.Column<int>(type: "int", nullable: true)
                 },
@@ -55,8 +55,8 @@ namespace LibraryAppWebAPI.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     MemberId = table.Column<int>(type: "int", nullable: false),
-                    MessageContext = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MessageSubject = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MessageContext = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    MessageSubject = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     SendData = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
