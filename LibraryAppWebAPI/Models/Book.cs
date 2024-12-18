@@ -9,5 +9,6 @@ public class Book : Title
     public int NumberOfPages { get; set; }
 
     [Required]
+    [MaxLength(20)]
     public string ISBN { get; set; }
 }
