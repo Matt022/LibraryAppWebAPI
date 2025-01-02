@@ -89,6 +89,24 @@ namespace LibraryAppWebAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Members");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DateOfBirth = new DateTime(1990, 5, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FirstName = "John",
+                            LastName = "Doe",
+                            PersonalId = "123456789"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DateOfBirth = new DateTime(1985, 7, 12, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FirstName = "Jane",
+                            LastName = "Smith",
+                            PersonalId = "987654321"
+                        });
                 });
 
             modelBuilder.Entity("LibraryAppWebAPI.Models.Message", b =>
@@ -120,6 +138,24 @@ namespace LibraryAppWebAPI.Migrations
                     b.HasIndex("MemberId");
 
                     b.ToTable("Messages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            MemberId = 1,
+                            MessageContext = "Dear John Doe, we are delighted to welcome you to our library. Explore our collection and enjoy our services!",
+                            MessageSubject = "Welcome to the Library!",
+                            SendData = new DateTime(2025, 1, 2, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7302)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            MemberId = 2,
+                            MessageContext = "Dear Jane Smith, we are delighted to welcome you to our library. Explore our collection and enjoy our services!",
+                            MessageSubject = "Welcome to the Library!",
+                            SendData = new DateTime(2025, 1, 2, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7306)
+                        });
                 });
 
             modelBuilder.Entity("LibraryAppWebAPI.Models.QueueItem", b =>
@@ -187,6 +223,61 @@ namespace LibraryAppWebAPI.Migrations
                     b.HasIndex("TitleId");
 
                     b.ToTable("RentalEntries");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            MaxReturnDate = new DateTime(2025, 1, 16, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7264),
+                            MemberId = 1,
+                            RentedDate = new DateTime(2024, 12, 26, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7257),
+                            TimesProlongued = 0,
+                            TitleId = 1,
+                            TitleType = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            MaxReturnDate = new DateTime(2025, 2, 2, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7270),
+                            MemberId = 2,
+                            RentedDate = new DateTime(2024, 12, 23, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7270),
+                            TimesProlongued = 1,
+                            TitleId = 2,
+                            TitleType = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            MaxReturnDate = new DateTime(2025, 1, 8, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7272),
+                            MemberId = 1,
+                            RentedDate = new DateTime(2025, 1, 2, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7271),
+                            ReturnDate = new DateTime(2025, 1, 7, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7272),
+                            TimesProlongued = 0,
+                            TitleId = 3,
+                            TitleType = 2
+                        },
+                        new
+                        {
+                            Id = 4,
+                            MaxReturnDate = new DateTime(2025, 1, 5, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7274),
+                            MemberId = 2,
+                            RentedDate = new DateTime(2024, 12, 29, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7274),
+                            ReturnDate = new DateTime(2025, 1, 3, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7275),
+                            TimesProlongued = 0,
+                            TitleId = 4,
+                            TitleType = 2
+                        },
+                        new
+                        {
+                            Id = 5,
+                            MaxReturnDate = new DateTime(2024, 12, 13, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7276),
+                            MemberId = 1,
+                            RentedDate = new DateTime(2024, 12, 3, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7276),
+                            ReturnDate = new DateTime(2024, 12, 15, 16, 59, 55, 689, DateTimeKind.Utc).AddTicks(7277),
+                            TimesProlongued = 0,
+                            TitleId = 1,
+                            TitleType = 1
+                        });
                 });
 
             modelBuilder.Entity("LibraryAppWebAPI.Models.Book", b =>
@@ -202,6 +293,28 @@ namespace LibraryAppWebAPI.Migrations
                         .HasColumnType("int");
 
                     b.HasDiscriminator().HasValue("Book");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Author = "George Orwell",
+                            AvailableCopies = 5,
+                            Name = "1984",
+                            TotalAvailableCopies = 5,
+                            ISBN = "978-0451524935",
+                            NumberOfPages = 328
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Author = "Aldous Huxley",
+                            AvailableCopies = 3,
+                            Name = "Brave New World",
+                            TotalAvailableCopies = 3,
+                            ISBN = "978-0060850524",
+                            NumberOfPages = 268
+                        });
                 });
 
             modelBuilder.Entity("LibraryAppWebAPI.Models.Dvd", b =>
@@ -215,6 +328,28 @@ namespace LibraryAppWebAPI.Migrations
                         .HasColumnType("int");
 
                     b.HasDiscriminator().HasValue("Dvd");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 3,
+                            Author = "Christopher Nolan",
+                            AvailableCopies = 4,
+                            Name = "Inception",
+                            TotalAvailableCopies = 4,
+                            NumberOfMinutes = 148,
+                            PublishYear = 2010
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Author = "Steven Spielberg",
+                            AvailableCopies = 2,
+                            Name = "Jurassic Park",
+                            TotalAvailableCopies = 2,
+                            NumberOfMinutes = 127,
+                            PublishYear = 1993
+                        });
                 });
 
             modelBuilder.Entity("LibraryAppWebAPI.Models.Message", b =>

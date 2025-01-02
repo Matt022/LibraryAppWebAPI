@@ -1,3 +1,5 @@
+using Hangfire;
+using LibraryAppWebAPI.CleanUp;
 using LibraryAppWebAPI.DataContext;
 using LibraryAppWebAPI.Repository;
 using LibraryAppWebAPI.Repository.Interfaces;
@@ -36,6 +38,14 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     });
 
+    // Nastavenie Hangfire
+    builder.Services.AddHangfire(config =>
+    {
+        config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"));
+    });
+
+    builder.Services.AddHangfireServer();
+
     builder.Services.AddCors(options =>
     {
         options.AddDefaultPolicy(builder =>
@@ -71,6 +81,14 @@ WebApplication app = builder.Build();
     app.UseRouting();
 
     app.UseAuthorization();
+
+    app.UseHangfireDashboard();
+
+    RecurringJob.AddOrUpdate<DataCleanupJob>(
+        "DataCleanupJob", 
+        job => job.ExecuteAsync(), 
+        "0 1 * * *"
+    );
 
     app.MapControllers();
 
