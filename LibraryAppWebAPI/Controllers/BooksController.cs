@@ -5,6 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Models.DTOs;
 using LibraryAppWebAPI.Repository.Interfaces;
+using LibraryAppWebAPI.Models.RequestModels;
 
 namespace LibraryAppWebAPI.Controllers;
 
@@ -13,18 +14,28 @@ namespace LibraryAppWebAPI.Controllers;
 [SwaggerTag("Books")]
 public class BooksController(IBookRepository bookRepository, IRentalEntryRepository rentalEntryRepository) : ControllerBase
 {
+    private static readonly Dictionary<string, DateTime> LastRequestTimes = new();
+    private static readonly object LockObject = new();
+
     // GET: api/Books
     [HttpGet]
     [ProducesResponseType(200, Type = typeof(OkResult))]
     [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Get all books", Tags = ["Books"])]
-    public ActionResult<IEnumerable<Book>> GetBooks()
+    public ActionResult<IEnumerable<BookRequestModel>> GetBooks()
     {
         IEnumerable<Book> books = bookRepository.GetAll();
-        if (books == null || !books.Any())          
+        if (books == null || !books.Any())
             return NotFound("No books in database");
-        
-        return Ok(books);
+
+        List<BookRequestModel> bookRequestModels = [];
+        foreach (Book book in books)
+        {
+            BookRequestModel newBookDto = new(book);
+            bookRequestModels.Add(newBookDto);
+        }
+
+        return Ok(bookRequestModels);
     }
 
     // GET: api/Books/5
@@ -32,13 +43,15 @@ public class BooksController(IBookRepository bookRepository, IRentalEntryReposit
     [ProducesResponseType(200, Type = typeof(Book))]
     [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Get a book by Id", Tags = ["Books"])]
-    public ActionResult<Book> GetBook(int id)
+    public ActionResult<BookRequestModel> GetBook(int id)
     {
         if (!bookRepository.BookExists(id))
             return NotFound($"Book with id {id} does not exist");
 
         Book book = bookRepository.GetById(id);
-        return Ok(book);
+        BookRequestModel requestModel = new(book);
+
+        return Ok(requestModel);
     }
 
     // POST: api/Books
@@ -46,10 +59,26 @@ public class BooksController(IBookRepository bookRepository, IRentalEntryReposit
     [ProducesResponseType(201, Type = typeof(Created))]
     [ProducesResponseType(400, Type = typeof(BadRequest))]
     [SwaggerOperation(Summary = "Create a book", Tags = ["Books"])]
-    public ActionResult<Book> CreateBook([FromBody] BookDto bookRequest)
+    public IActionResult CreateBook([FromBody] BookDto bookRequest)
     {
+        // Vaša logika pre vytváranie knihy
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
+        string clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        lock (LockObject)
+        {
+            if (LastRequestTimes.TryGetValue(clientIp, out DateTime lastRequestTime))
+            {
+                if ((DateTime.UtcNow - lastRequestTime).TotalSeconds < 10) // Limit: 10 sekúnd medzi požiadavkami
+                {
+                    return StatusCode(429, "You are sending requests too quickly.");
+                }
+            }
+
+            LastRequestTimes[clientIp] = DateTime.UtcNow;
+        }
 
         Book book = new()
         {
@@ -58,11 +87,12 @@ public class BooksController(IBookRepository bookRepository, IRentalEntryReposit
             AvailableCopies = bookRequest.TotalAvailableCopies,
             TotalAvailableCopies = bookRequest.TotalAvailableCopies,
             NumberOfPages = bookRequest.NumberOfPages,
-            ISBN = bookRequest.ISBN
+            ISBN = bookRequest.ISBN,
+            CanManipulate = true
         };
 
         bookRepository.Create(book);
-        return CreatedAtAction("GetBook", new { id = book.Id }, book);
+        return CreatedAtAction(nameof(GetBook), new { id = 1 }, bookRequest);
     }
 
     // PUT: api/Books/5
@@ -77,28 +107,42 @@ public class BooksController(IBookRepository bookRepository, IRentalEntryReposit
             return BadRequest(ModelState);
 
         if (!bookRepository.BookExists(id))
-        {
             return NotFound($"Book with id {id} does not exist");
-        }    
 
-        Book book = bookRepository.GetById(id);
-        {
-            book.Author = bookRequest.Author;
-            book.Name = bookRequest.Name;
-            book.AvailableCopies = bookRequest.TotalAvailableCopies;
-            book.TotalAvailableCopies = bookRequest.TotalAvailableCopies;
-            book.NumberOfPages = bookRequest.NumberOfPages;
-            book.ISBN = bookRequest.ISBN;
-        };
+        string clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-        if (!rentalEntryRepository.RentalEntryByTitleIdExist(id))
+        lock (LockObject)
         {
-            bookRepository.Update(book);
+            if (LastRequestTimes.TryGetValue(clientIp, out DateTime lastRequestTime))
+            {
+                if ((DateTime.UtcNow - lastRequestTime).TotalSeconds < 10) // Limit: 10 sekúnd medzi požiadavkami
+                {
+                    return StatusCode(429, "You are sending requests too quickly.");
+                }
+            }
+
+            LastRequestTimes[clientIp] = DateTime.UtcNow;
         }
-        else
-        {
+
+        if (!bookRepository.CanManipulate(id))
+            return BadRequest($"You can't update this book!");
+
+        Book existingBook = bookRepository.GetById(id);
+
+        // Update properties only if they are different to avoid unnecessary updates
+        existingBook.Author = bookRequest.Author;
+        existingBook.Name = bookRequest.Name;
+        existingBook.AvailableCopies = bookRequest.TotalAvailableCopies;
+        existingBook.TotalAvailableCopies = bookRequest.TotalAvailableCopies;
+        existingBook.NumberOfPages = bookRequest.NumberOfPages;
+        existingBook.ISBN = bookRequest.ISBN;
+        existingBook.CanManipulate = true;
+
+        if (rentalEntryRepository.RentalEntryByTitleIdExist(id))
             return BadRequest("This title was found in rentals. This title cannot be updated");
-        }
+
+        // Update the book only if it is valid and not rented
+        bookRepository.Update(existingBook);
 
         return Ok($"Book with id {id} was successfully updated");
     }
@@ -113,15 +157,15 @@ public class BooksController(IBookRepository bookRepository, IRentalEntryReposit
     {
         if (!bookRepository.BookExists(id))
             return NotFound($"Book with id {id} does not exist");
+        
+        if (!bookRepository.CanManipulate(id))
+            return BadRequest($"You can't delete this book!");
 
-        if (!rentalEntryRepository.RentalEntryByTitleIdExist(id))
-        {
-            bookRepository.Delete(id);
-        }
-        else
-        {
+        if (rentalEntryRepository.RentalEntryByTitleIdExist(id))
             return BadRequest($"This title was found in rentals. This title cannot be removed");
-        }
+
+        // Proceed to delete the book since it is not rented
+        bookRepository.Delete(id);
 
         return Ok($"Book with id {id} was successfully deleted");
     }

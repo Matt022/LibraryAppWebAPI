@@ -8,6 +8,7 @@ using LibraryAppWebAPI.Base.Enums;
 using LibraryAppWebAPI.Controllers;
 using LibraryAppWebAPI.Service.IServices;
 using LibraryAppWebAPI.Repository.Interfaces;
+using Microsoft.AspNetCore.Http;
 
 namespace LibraryAppWebAPITests.Controllers;
 
@@ -19,6 +20,8 @@ public class RentalEntriesControllerTests
 
     private readonly RentalEntriesController _rentalEntriesController;
 
+    private static readonly Dictionary<string, DateTime> LastRequestTimes = new();
+
     public RentalEntriesControllerTests()
     {
         _mockRentalEntryRepository = new Mock<IRentalEntryRepository>();
@@ -26,6 +29,28 @@ public class RentalEntriesControllerTests
         _mockRentalEntryService = new Mock<IRentalEntryService>();
 
         _rentalEntriesController = new RentalEntriesController(_mockRentalEntryRepository.Object, _mockMemberRepository.Object, _mockRentalEntryService.Object);
+
+        // Mockovanie HttpContext
+        var httpContext = new DefaultHttpContext();
+        httpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("127.0.0.1"); // Nastavte IP adresu podľa potreby
+        _rentalEntriesController.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+    }
+
+    // Pomocná metóda na resetovanie stavu kontroléra
+    private void ResetControllerState()
+    {
+        // Vyčistenie statickej premennej LastRequestTimes
+        var lastRequestTimesField = typeof(RentalEntriesController)
+            .GetField("LastRequestTimes", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        if (lastRequestTimesField != null)
+        {
+            var lastRequestTimes = lastRequestTimesField.GetValue(null) as Dictionary<string, DateTime>;
+            lastRequestTimes?.Clear();
+        }
     }
 
     #region GetRentalEntries
@@ -328,11 +353,15 @@ public class RentalEntriesControllerTests
     [Fact]
     public void RentTitle_ReturnsBadRequest_WhenCannotRentTitle()
     {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
         // Arrange
         var validDto = new RentalEntryDto { MemberId = 1, TitleId = 1001 };
         string message = "Member cannot rent this title due to restrictions";
         var canRentDictionary = new Dictionary<bool, string> { { false, message } };
 
+        // Mockovanie služby
         _mockRentalEntryService
             .Setup(service => service.CanRent(validDto, It.IsAny<string>()))
             .Returns(canRentDictionary);
@@ -349,11 +378,15 @@ public class RentalEntriesControllerTests
     [Fact]
     public void RentTitle_ReturnsOk_WhenCanRentTitle()
     {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
         // Arrange
         var validDto = new RentalEntryDto { MemberId = 1, TitleId = 1001 };
         string message = "Title rented successfully";
         var canRentDictionary = new Dictionary<bool, string> { { true, message } };
 
+        // Mockovanie služby
         _mockRentalEntryService
             .Setup(service => service.CanRent(validDto, It.IsAny<string>()))
             .Returns(canRentDictionary);
@@ -374,6 +407,9 @@ public class RentalEntriesControllerTests
     [Fact]
     public void ReturnTitle_Valid_ReturnsOk()
     {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
         // Arrange
         int rentalEntryId = 1;
         var returnTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 2 };
@@ -423,6 +459,9 @@ public class RentalEntriesControllerTests
     [Fact]
     public void ReturnTitle_CannotReturn_ReturnsBadRequestWithMessage()
     {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
         // Arrange
         var returnTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 1 };
         string validationMessage = "Cannot return this title.";
@@ -491,6 +530,9 @@ public class RentalEntriesControllerTests
     [Fact]
     public void ProlongTitle_CannotProlong_ReturnsBadRequestWithMessage()
     {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
         // Arrange
         var prolongTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 1 };
         string prolongMessage = "Cannot prolong this title.";
@@ -498,9 +540,6 @@ public class RentalEntriesControllerTests
 
         _mockRentalEntryService
             .Setup(service => service.ProlongRental(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<ReturnTitleDto>(), It.IsAny<string>()))
-            .Callback((int id, int memberId, ReturnTitleDto dto, string message) => {
-                message = prolongMessage;
-            })
             .Returns(prolongResponse);
 
         // Act

@@ -16,7 +16,7 @@ public class Member : EntityBase
     public string PersonalId { get; set; }
     [Required]
     public DateTime DateOfBirth { get; set; }
-
+    public bool CanManipulate { get; set; }
     public string FullName()
     {
         return $"{FirstName} {LastName}";

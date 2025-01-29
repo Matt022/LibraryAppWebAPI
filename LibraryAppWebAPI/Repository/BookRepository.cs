@@ -19,6 +19,12 @@ public class BookRepository(LibraryContext context) : IBookRepository
         return result.Entity;
     }
 
+    public bool CanManipulate(int id)
+    {
+        Book? result = context.Book.FirstOrDefault(b => b.Id == id);
+        return result!.CanManipulate == true;
+    }
+
     public Book Delete(int id)
     {
         Book entity = GetById(id);

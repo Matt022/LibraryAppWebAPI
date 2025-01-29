@@ -5,4 +5,5 @@ namespace LibraryAppWebAPI.Repository.Interfaces;
 public interface IMemberRepository : IRepository<Member>
 {
     bool MemberExists(int id);
+    bool CanManipulate(int id);
 }

@@ -6,6 +6,7 @@ using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Models.DTOs;
 using LibraryAppWebAPI.Service.IServices;
 using LibraryAppWebAPI.Repository.Interfaces;
+using LibraryAppWebAPI.Models.RequestModels;
 
 namespace LibraryAppWebAPI.Controllers;
 
@@ -14,18 +15,28 @@ namespace LibraryAppWebAPI.Controllers;
 [SwaggerTag("Members")]
 public class MembersController(IMemberRepository memberRepository, IMessagingService messagingService, IRentalEntryRepository rentalEntryRepository, IQueueItemRepository queueItemRepository) : ControllerBase
 {
+    private static readonly Dictionary<string, DateTime> LastRequestTimes = new();
+    private static readonly object LockObject = new();
+
     // GET: api/Members
     [HttpGet]
     [ProducesResponseType(200, Type = typeof(OkResult))]
     [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Get all members", Tags = ["Members"])]
-    public ActionResult<IEnumerable<Member>> GetMembers()
+    public ActionResult<IEnumerable<MemberRequestModel>> GetMembers()
     {
         IEnumerable<Member> members = memberRepository.GetAll();
         if (members == null || !members.Any())
             return NotFound("No members in database");
 
-        return Ok(members);
+        List<MemberRequestModel> memberRequestModelList = new ();
+        foreach (Member member in members)
+        {
+            MemberRequestModel memberRequestModel = new(member);
+            memberRequestModelList.Add(memberRequestModel);
+        }
+
+        return Ok(memberRequestModelList);
     }
 
     // GET: api/Members/5
@@ -33,13 +44,15 @@ public class MembersController(IMemberRepository memberRepository, IMessagingSer
     [ProducesResponseType(200, Type = typeof(Member))]
     [ProducesResponseType(404, Type = typeof(NotFound))]
     [SwaggerOperation(Summary = "Get a member by Id", Tags = ["Members"])]
-    public ActionResult<Member> GetMember(int id)
+    public ActionResult<MemberRequestModel> GetMember(int id)
     {
         if (!memberRepository.MemberExists(id))
             return NotFound($"Member with id {id} does not exist");
 
         Member member = memberRepository.GetById(id);
-        return Ok(member);
+
+        MemberRequestModel memberRequestModel = new(member);
+        return Ok(memberRequestModel);
     }
 
     // POST: api/Members
@@ -51,6 +64,21 @@ public class MembersController(IMemberRepository memberRepository, IMessagingSer
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
+        string clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        lock (LockObject)
+        {
+            if (LastRequestTimes.TryGetValue(clientIp, out DateTime lastRequestTime))
+            {
+                if ((DateTime.UtcNow - lastRequestTime).TotalSeconds < 10) // Limit: 10 sekúnd medzi požiadavkami
+                {
+                    return StatusCode(429, "You are sending requests too quickly.");
+                }
+            }
+
+            LastRequestTimes[clientIp] = DateTime.UtcNow;
+        }
 
         Member member = new();
         {
@@ -82,6 +110,24 @@ public class MembersController(IMemberRepository memberRepository, IMessagingSer
         if (!memberRepository.MemberExists(id))
             return NotFound($"Member with id {id} does not exist");
 
+        string clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        lock (LockObject)
+        {
+            if (LastRequestTimes.TryGetValue(clientIp, out DateTime lastRequestTime))
+            {
+                if ((DateTime.UtcNow - lastRequestTime).TotalSeconds < 10) // Limit: 10 sekúnd medzi požiadavkami
+                {
+                    return StatusCode(429, "You are sending requests too quickly.");
+                }
+            }
+
+            LastRequestTimes[clientIp] = DateTime.UtcNow;
+        }
+
+        if (!memberRepository.CanManipulate(id))
+            return BadRequest($"You can't update this member!");
+
         Member member = memberRepository.GetById(id);
         {
             member.DateOfBirth = memberRequest.DateOfBirth;
@@ -105,15 +151,14 @@ public class MembersController(IMemberRepository memberRepository, IMessagingSer
         if (!memberRepository.MemberExists(id))
             return NotFound($"Member with id {id} does not exist");
 
+        if (!memberRepository.CanManipulate(id))
+            return BadRequest($"You can't delete this member!");
+
         if (queueItemRepository.QueueItemByMemberIdExist(id))
-        {
             return BadRequest($"Member with id {id} is in queue. This member cannot be removed");
-        }
         
         if (rentalEntryRepository.RentalEntryByMemberIdExist(id))
-        {
             return BadRequest($"There are some rentals made by a member with id {id}. This member cannot be removed");
-        }
 
         memberRepository.Delete(id);
         return Ok($"Member with id {id} was successfully deleted");

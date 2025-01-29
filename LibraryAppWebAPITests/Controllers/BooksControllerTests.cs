@@ -1,9 +1,11 @@
 ﻿using Moq;
-using Microsoft.AspNetCore.Mvc;
 using Xunit;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Models.DTOs;
+using LibraryAppWebAPI.Models.RequestModels;
 using LibraryAppWebAPI.Controllers;
 using LibraryAppWebAPI.Repository.Interfaces;
 
@@ -22,6 +24,27 @@ public class BooksControllerTests
         _mockBookRepo = new Mock<IBookRepository>();
         _mockRentalEntryRepo = new Mock<IRentalEntryRepository>();
         _controller = new BooksController(_mockBookRepo.Object, _mockRentalEntryRepo.Object);
+
+        // Mockovanie HttpContext
+        var httpContext = new DefaultHttpContext();
+        httpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("127.0.0.1"); // Nastavte IP adresu podľa potreby
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+    }
+
+    private void ResetControllerState()
+    {
+        // Vyčistenie statickej premennej LastRequestTimes
+        var lastRequestTimesField = typeof(BooksController)
+            .GetField("LastRequestTimes", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        if (lastRequestTimesField != null)
+        {
+            var lastRequestTimes = lastRequestTimesField.GetValue(null) as Dictionary<string, DateTime>;
+            lastRequestTimes?.Clear();
+        }
     }
 
     #region GetBooks
@@ -41,7 +64,7 @@ public class BooksControllerTests
 
         // Assert
         var okResult = Xunit.Assert.IsType<OkObjectResult>(result.Result);
-        var returnBooks = Xunit.Assert.IsAssignableFrom<IEnumerable<Book>>(okResult.Value);
+        var returnBooks = Xunit.Assert.IsAssignableFrom<IEnumerable<BookRequestModel>>(okResult.Value);
         Xunit.Assert.Equal(2, returnBooks.Count());
     }
 
@@ -86,7 +109,7 @@ public class BooksControllerTests
 
         // Assert
         var okResult = Xunit.Assert.IsType<OkObjectResult>(result.Result); // This checks if result is OkObjectResult
-        var returnBook = Xunit.Assert.IsType<Book>(okResult.Value); // This checks if the returned value is of type Book
+        var returnBook = Xunit.Assert.IsType<BookRequestModel>(okResult.Value); // This checks if the returned value is of type Book
         Xunit.Assert.Equal(bookId, returnBook.Id); // This checks if the returned Book has the expected ID
     }
 
@@ -112,6 +135,8 @@ public class BooksControllerTests
     [Fact]
     public void CreateBook_ReturnsCreatedAtActionResult_WhenBookIsValid()
     {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
         // Arrange
         var bookRequest = new BookDto
         {
@@ -126,8 +151,8 @@ public class BooksControllerTests
         var result = _controller.CreateBook(bookRequest);
 
         // Assert
-        var createdAtActionResult = Xunit.Assert.IsType<CreatedAtActionResult>(result.Result);
-        var returnBook = Xunit.Assert.IsType<Book>(createdAtActionResult.Value);
+        var createdAtActionResult = Xunit.Assert.IsType<CreatedAtActionResult>(result);
+        var returnBook = Xunit.Assert.IsType<BookDto>(createdAtActionResult.Value);
         Xunit.Assert.Equal(bookRequest.Name, returnBook.Name);
         Xunit.Assert.Equal(bookRequest.Author, returnBook.Author);
     }
@@ -143,7 +168,7 @@ public class BooksControllerTests
         var result = _controller.CreateBook(bookRequest);
 
         // Assert
-        Xunit.Assert.IsType<BadRequestObjectResult>(result.Result);
+        Xunit.Assert.IsType<BadRequestObjectResult>(result);
     }
     #endregion CreateBook
 
@@ -152,8 +177,10 @@ public class BooksControllerTests
     [Fact]
     public void UpdateBook_ReturnsOkResult_WhenBookIsUpdated()
     {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
         // Arrange
-        int bookId = 1;
+        int bookId = 50;
         BookDto bookRequest = new()
         {
             Name = "Updated Book",
@@ -164,6 +191,7 @@ public class BooksControllerTests
         };
 
         _mockBookRepo.Setup(repo => repo.BookExists(bookId)).Returns(true);
+        _mockBookRepo.Setup(repo => repo.CanManipulate(bookId)).Returns(true);
         _mockBookRepo.Setup(repo => repo.GetById(bookId)).Returns(new Book { Id = bookId });
         _mockRentalEntryRepo.Setup(repo => repo.RentalEntryByTitleIdExist(bookId)).Returns(false);
 
@@ -206,6 +234,7 @@ public class BooksControllerTests
         };
 
         _mockBookRepo.Setup(repo => repo.BookExists(bookId)).Returns(true);
+        _mockBookRepo.Setup(repo => repo.CanManipulate(bookId)).Returns(true);
         _mockBookRepo.Setup(repo => repo.GetById(bookId)).Returns(new Book { Id = bookId });
         _mockRentalEntryRepo.Setup(repo => repo.RentalEntryByTitleIdExist(bookId)).Returns(true);
 
@@ -248,6 +277,7 @@ public class BooksControllerTests
         int bookId = 1;
 
         _mockBookRepo.Setup(repo => repo.BookExists(bookId)).Returns(true);
+        _mockBookRepo.Setup(repo => repo.CanManipulate(bookId)).Returns(true);
         _mockRentalEntryRepo.Setup(repo => repo.RentalEntryByTitleIdExist(bookId)).Returns(false);
 
         // Act
@@ -263,7 +293,7 @@ public class BooksControllerTests
     public void DeleteBook_ReturnsNotFound_WhenBookDoesNotExist()
     {
         // Arrange
-        int bookId = 1;
+        int bookId = 50;
 
         _mockBookRepo.Setup(repo => repo.BookExists(bookId)).Returns(false);
 
@@ -280,9 +310,10 @@ public class BooksControllerTests
     public void DeleteBook_ReturnsBadRequest_WhenBookIsInRentals()
     {
         // Arrange
-        int bookId = 1;
+        int bookId = 50;
 
         _mockBookRepo.Setup(repo => repo.BookExists(bookId)).Returns(true);
+        _mockBookRepo.Setup(repo => repo.CanManipulate(bookId)).Returns(true);
         _mockRentalEntryRepo.Setup(repo => repo.RentalEntryByTitleIdExist(bookId)).Returns(true);
 
         // Act
