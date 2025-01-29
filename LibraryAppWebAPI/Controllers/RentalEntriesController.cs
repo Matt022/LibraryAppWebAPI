@@ -14,6 +14,9 @@ namespace LibraryAppWebAPI.Controllers;
 [SwaggerTag("RentalEntries")]
 public class RentalEntriesController(IRentalEntryRepository rentalEntryRepository, IMemberRepository memberRepository, IRentalEntryService rentalEntryService) : ControllerBase
 {
+    private static readonly Dictionary<string, DateTime> LastRequestTimes = new();
+    private static readonly object LockObject = new();
+
     // GET: api/RentalEntries
     [HttpGet]
     [ProducesResponseType(200, Type = typeof(OkResult))]
@@ -90,13 +93,33 @@ public class RentalEntriesController(IRentalEntryRepository rentalEntryRepositor
     [SwaggerOperation(Summary = "Create a rent or rent a title", Tags = ["RentalEntries"])]
     public ActionResult<Member> RentTitle([FromBody] RentalEntryDto rentalEntryCreate)
     {
+        if (rentalEntryCreate == null)
+            return BadRequest("Rental entry data cannot be null.");
+
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        string message = "";
+        string clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        lock (LockObject)
+        {
+            if (LastRequestTimes.TryGetValue(clientIp, out DateTime lastRequestTime))
+            {
+                if ((DateTime.UtcNow - lastRequestTime).TotalSeconds < 10) // Limit: 10 sekúnd medzi požiadavkami
+                {
+                    return StatusCode(429, "You are sending requests too quickly.");
+                }
+            }
+
+            LastRequestTimes[clientIp] = DateTime.UtcNow;
+        }
+
+        string message = string.Empty;
         bool canRent = false;
 
-        Dictionary<bool, string> dictionary = rentalEntryService.CanRent(rentalEntryCreate, message);
+        var dictionary = rentalEntryService.CanRent(rentalEntryCreate, message);
+        if (dictionary == null)
+            return BadRequest("Error processing rental request.");
 
         foreach (KeyValuePair<bool, string> keyValues in dictionary)
         {
@@ -107,12 +130,13 @@ public class RentalEntriesController(IRentalEntryRepository rentalEntryRepositor
         if (!canRent)
         {
             return BadRequest(message);
-        } 
+        }
         else
         {
             return Ok(message);
-        }    
+        }
     }
+
 
     // PUT: api/RentalEntries/ReturnTitle/5
     [HttpPut("ReturnTitle/{id}")]
@@ -123,6 +147,21 @@ public class RentalEntriesController(IRentalEntryRepository rentalEntryRepositor
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
+        string clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        lock (LockObject)
+        {
+            if (LastRequestTimes.TryGetValue(clientIp, out DateTime lastRequestTime))
+            {
+                if ((DateTime.UtcNow - lastRequestTime).TotalSeconds < 10) // Limit: 10 sekúnd medzi požiadavkami
+                {
+                    return StatusCode(429, "You are sending requests too quickly.");
+                }
+            }
+
+            LastRequestTimes[clientIp] = DateTime.UtcNow;
+        }
 
         string message = "";
         bool canReturn = false;
@@ -151,10 +190,26 @@ public class RentalEntriesController(IRentalEntryRepository rentalEntryRepositor
     [SwaggerOperation(Summary = "Prolong a title", Tags = ["RentalEntries"])]
     public IActionResult ProlongTitle(int id, [FromBody] ReturnTitleDto prolongTitle)
     {
-        string message = "";
-        bool canProlong = false;
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
+        string clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        lock (LockObject)
+        {
+            if (LastRequestTimes.TryGetValue(clientIp, out DateTime lastRequestTime))
+            {
+                if ((DateTime.UtcNow - lastRequestTime).TotalSeconds < 10) // Limit: 10 sekúnd medzi požiadavkami
+                {
+                    return StatusCode(429, "You are sending requests too quickly.");
+                }
+            }
+
+            LastRequestTimes[clientIp] = DateTime.UtcNow;
+        }
+
+        string message = "";
+        bool canProlong = false;
 
         Dictionary<bool, string> dictionary = rentalEntryService.ProlongRental(id, prolongTitle.MemberId, prolongTitle, message);
         foreach (KeyValuePair<bool, string> keyValues in dictionary)

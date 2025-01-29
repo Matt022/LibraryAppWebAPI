@@ -19,6 +19,12 @@ public class DvdRepository(LibraryContext context) : IDvdRepository
         return result.Entity;
     }
 
+    public bool CanManipulate(int id)
+    {
+        Dvd? result = context.Dvds.FirstOrDefault(b => b.Id == id);
+        return result!.CanManipulate == true;
+    }
+
     public Dvd Delete(int id)
     {
         Dvd entity = GetById(id);

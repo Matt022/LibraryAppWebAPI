@@ -1,12 +1,15 @@
 ﻿using Moq;
 using Xunit;
+
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Models.DTOs;
 using LibraryAppWebAPI.Controllers;
 using LibraryAppWebAPI.Service.IServices;
 using LibraryAppWebAPI.Repository.Interfaces;
+using LibraryAppWebAPI.Models.RequestModels;
 
 namespace LibraryAppWebAPITests.Controllers;
 
@@ -28,6 +31,27 @@ public class MembersControllerTests
         _mockQueueItemRepository = new Mock<IQueueItemRepository>();
 
         _membersController = new MembersController(_mockMemberRepository.Object, _mockMessagingService.Object, _mockRentalEntryRepository.Object, _mockQueueItemRepository.Object);
+
+        // Mockovanie HttpContext
+        var httpContext = new DefaultHttpContext();
+        httpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("127.0.0.1"); // Nastavte IP adresu podľa potreby
+        _membersController.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+    }
+
+    private static void ResetControllerState()
+    {
+        // Vyčistenie statickej premennej LastRequestTimes
+        var lastRequestTimesField = typeof(MembersController)
+            .GetField("LastRequestTimes", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+        if (lastRequestTimesField != null)
+        {
+            var lastRequestTimes = lastRequestTimesField.GetValue(null) as Dictionary<string, DateTime>;
+            lastRequestTimes?.Clear();
+        }
     }
 
     #region GetMembers
@@ -80,7 +104,7 @@ public class MembersControllerTests
         var okResult = Xunit.Assert.IsType<OkObjectResult>(result.Result);
 
         // Overenie, že vrátená hodnota je zoznam členov
-        var returnMembers = Xunit.Assert.IsType<List<Member>>(okResult.Value);
+        var returnMembers = Xunit.Assert.IsType<List<MemberRequestModel>>(okResult.Value);
         Xunit.Assert.Equal(2, returnMembers.Count);
     }
 
@@ -111,7 +135,7 @@ public class MembersControllerTests
 
         // Assert - Overenie, že výsledok je typu OkObjectResult a vracia očakávaného člena
         var okResult = Xunit.Assert.IsType<OkObjectResult>(result.Result);
-        var returnedMember = Xunit.Assert.IsType<Member>(okResult.Value);
+        var returnedMember = Xunit.Assert.IsType<MemberRequestModel>(okResult.Value);
         Xunit.Assert.Equal(memberId, returnedMember.Id);
     }
 
@@ -142,6 +166,9 @@ public class MembersControllerTests
     [Fact]
     public void CreateMember_ReturnsCreatedAtAction_WhenModelIsValid()
     {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
         // Arrange - Príprava testovacích dát
         var memberRequest = new MemberDto
         {
@@ -246,10 +273,13 @@ public class MembersControllerTests
     [Fact]
     public void UpdateMember_ReturnsOk_WhenMemberExistsAndModelIsValid()
     {
+        // Resetovanie
+        ResetControllerState();
+
         // Arrange - Príprava testovacích dát
 
         // Definovanie ID člena, ktorý bude aktualizovaný
-        int memberId = 1;
+        int memberId = 50;
 
         // Vytvorenie DTO objektu s novými údajmi pre člena
         var memberRequest = new MemberDto
@@ -274,6 +304,9 @@ public class MembersControllerTests
 
         // Mockovanie metódy MemberExists(id) tak, aby vrátila true, čo znamená, že člen existuje
         _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
+
+        // Mockovanie metódy CanManipulate(id) tak, aby vrátila true, čo znamená, že s členom sa dá manipulovať
+        _mockMemberRepository.Setup(repo => repo.CanManipulate(memberId)).Returns(true);
 
         // Mockovanie metódy GetById(id) tak, aby vrátila existujúceho člena
         _mockMemberRepository.Setup(repo => repo.GetById(memberId)).Returns(existingMember);

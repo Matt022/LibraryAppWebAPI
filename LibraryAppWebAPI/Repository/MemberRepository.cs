@@ -23,6 +23,12 @@ public class MemberRepository(LibraryContext context) : IMemberRepository
         return member.Entity;
     }
 
+    public bool CanManipulate(int id)
+    {
+        Member? result = context.Members.FirstOrDefault(b => b.Id == id);
+        return result!.CanManipulate == true;
+    }
+
     public Member Delete(int id)
     {
         Member member = GetById(id);
