@@ -359,7 +359,7 @@ public class RentalEntryService : IRentalEntryService
             title = _dvdRepository.GetById(titleId);
             return title;
         }
-        return title!;
+        return title;
     }
     #endregion HelperMethods
 }

@@ -128,15 +128,15 @@ public class BooksController(IBookRepository bookRepository, IRentalEntryReposit
             return BadRequest($"You can't update this book!");
 
         Book existingBook = bookRepository.GetById(id);
-
-        // Update properties only if they are different to avoid unnecessary updates
-        existingBook.Author = bookRequest.Author;
-        existingBook.Name = bookRequest.Name;
-        existingBook.AvailableCopies = bookRequest.TotalAvailableCopies;
-        existingBook.TotalAvailableCopies = bookRequest.TotalAvailableCopies;
-        existingBook.NumberOfPages = bookRequest.NumberOfPages;
-        existingBook.ISBN = bookRequest.ISBN;
-        existingBook.CanManipulate = true;
+        {
+            existingBook.Author = bookRequest.Author;
+            existingBook.Name = bookRequest.Name;
+            existingBook.AvailableCopies = bookRequest.TotalAvailableCopies;
+            existingBook.TotalAvailableCopies = bookRequest.TotalAvailableCopies;
+            existingBook.NumberOfPages = bookRequest.NumberOfPages;
+            existingBook.ISBN = bookRequest.ISBN;
+            existingBook.CanManipulate = true;
+        }
 
         if (rentalEntryRepository.RentalEntryByTitleIdExist(id))
             return BadRequest("This title was found in rentals. This title cannot be updated");

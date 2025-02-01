@@ -45,10 +45,10 @@ public class DvdsController(IDvdRepository dvdRepository, IRentalEntryRepository
     [SwaggerOperation(Summary = "Get dvd by id", Tags = ["Dvds"])]
     public ActionResult<DvdRequestModel> GetDvd(int id)
     {
-        Dvd dvd = dvdRepository.GetById(id);
-
         if (!dvdRepository.DvdExists(id))
             return NotFound($"Dvd with id {id} does not exist");
+
+        Dvd dvd = dvdRepository.GetById(id);
 
         DvdRequestModel dvdRequestModel = new (dvd);
 

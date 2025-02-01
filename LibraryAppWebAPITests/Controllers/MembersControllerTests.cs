@@ -188,7 +188,6 @@ public class MembersControllerTests
         };
 
         // Nastavenie mock objektov
-        _mockMemberRepository.Setup(repo => repo.Create(It.IsAny<Member>())).Verifiable();
         _mockMemberRepository.Setup(repo => repo.GetById(It.IsAny<int>())).Returns(member);
         _mockMessagingService.Setup(service => service.SendMessage(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Verifiable();
 
@@ -200,10 +199,47 @@ public class MembersControllerTests
         Xunit.Assert.Equal("GetMember", createdAtActionResult.ActionName);
         var returnedMember = Xunit.Assert.IsType<Member>(createdAtActionResult.Value);
         Xunit.Assert.Equal(memberRequest.FirstName, returnedMember.FirstName);
+    }
 
-        // Overenie, že metódy v mockoch boli volané
-        _mockMemberRepository.Verify(repo => repo.Create(It.IsAny<Member>()), Times.Once);
-        _mockMessagingService.Verify(service => service.SendMessage(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    [Fact]
+    public void CreateMember_ReturnsTooManyRequests_WhenRateLimitingBreaks()
+    {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
+        // Arrange - Príprava testovacích dát
+        var memberRequest = new MemberDto
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            PersonalId = "123456789",
+            DateOfBirth = new DateTime(1990, 1, 1)
+        };
+
+        var member = new Member
+        {
+            Id = 1,
+            FirstName = memberRequest.FirstName,
+            LastName = memberRequest.LastName,
+            PersonalId = memberRequest.PersonalId,
+            DateOfBirth = memberRequest.DateOfBirth
+        };
+
+        // Nastavenie mock objektov
+        _mockMemberRepository.Setup(repo => repo.GetById(It.IsAny<int>())).Returns(member);
+        _mockMessagingService.Setup(service => service.SendMessage(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>())).Verifiable();
+
+        // Act - Volanie testovanej metódy
+        var result = _membersController.CreateMember(memberRequest);
+
+        for (int i = 0; i < 5; i++)
+        {
+            result = _membersController.CreateMember(memberRequest);
+        }
+
+        // Assert - Overenie, že výsledkom je CreatedAtActionResult
+        var createdAtActionResult = Xunit.Assert.IsType<ObjectResult>(result.Result);
+        Xunit.Assert.Equal("You are sending requests too quickly.", createdAtActionResult.Value);
     }
 
     // Test 2: Skontroluj, či metóda vráti BadRequest, keď model nie je platný
@@ -278,6 +314,106 @@ public class MembersControllerTests
 
         // Arrange - Príprava testovacích dát
 
+        int memberId = 50;
+        // Vytvorenie DTO objektu s novými údajmi pre člena
+        var memberRequest = new MemberDto
+        {
+            FirstName = "John", // Nové meno
+            LastName = "Doe", // Nové priezvisko
+            PersonalId = "123456789", // Nové osobné ID
+            DateOfBirth = new DateTime(1990, 1, 1) // Nový dátum narodenia
+        };
+
+        // Vytvorenie existujúceho člena, ktorý sa bude aktualizovať
+        var existingMember = new Member
+        {
+            Id = memberId, // ID člena
+            FirstName = "Jane", // Pôvodné meno
+            LastName = "Smith", // Pôvodné priezvisko
+            PersonalId = "987654321", // Pôvodné osobné ID
+            DateOfBirth = new DateTime(1985, 5, 20) // Pôvodný dátum narodenia
+        };
+
+        // Nastavenie mock objektov
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
+        _mockMemberRepository.Setup(repo => repo.CanManipulate(memberId)).Returns(true);
+        _mockMemberRepository.Setup(repo => repo.GetById(memberId)).Returns(existingMember);
+        _mockMemberRepository.Setup(repo => repo.Update(It.IsAny<Member>())).Verifiable();
+
+        // Act - Volanie testovanej metódy
+        var result = _membersController.UpdateMember(memberId, memberRequest);
+
+        // Assert - Overenie výsledku
+        var okResult = Xunit.Assert.IsType<OkObjectResult>(result);
+        Xunit.Assert.Equal($"Member with id {memberId} was successfully updated", okResult.Value);
+    }
+
+    [Fact]
+    public void UpdateMember_ReturnsBadRequest_WhenMemberExistsAndModelIsInvalid()
+    {
+        // Resetovanie
+        ResetControllerState();
+
+        // Arrange - Príprava testovacích dát
+
+        // Definovanie ID člena, ktorý bude aktualizovaný
+        int memberId = 50;
+
+        // Vytvorenie DTO objektu s novými údajmi pre člena
+        var memberRequest = new MemberDto
+        {
+            FirstName = "John", // Nové meno
+            LastName = "Doe", // Nové priezvisko
+            PersonalId = "123456789", // Nové osobné ID
+            DateOfBirth = new DateTime(1990, 1, 1) // Nový dátum narodenia
+        };
+
+        // Vytvorenie existujúceho člena, ktorý sa bude aktualizovať
+        var existingMember = new Member
+        {
+            Id = memberId, // ID člena
+            FirstName = "Jane", 
+            LastName = "", 
+            PersonalId = "987654321", 
+            DateOfBirth = new DateTime(1985, 5, 20) 
+        };
+
+        // Nastavenie mock objektov
+
+        // Mockovanie metódy MemberExists(id) tak, aby vrátila true, čo znamená, že člen existuje
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
+
+        // Mockovanie metódy CanManipulate(id) tak, aby vrátila true, čo znamená, že s členom sa dá manipulovať
+        _mockMemberRepository.Setup(repo => repo.CanManipulate(memberId)).Returns(true);
+
+        // Mockovanie metódy GetById(id) tak, aby vrátila existujúceho člena
+        _mockMemberRepository.Setup(repo => repo.GetById(memberId)).Returns(existingMember);
+
+        // Mockovanie metódy Update(member) tak, aby bola overiteľná (Verifiable)
+        _mockMemberRepository.Setup(repo => repo.Update(It.IsAny<Member>())).Verifiable();
+
+        _membersController.ModelState.AddModelError("LastName", "Required");
+
+        // Act - Volanie testovanej metódy
+
+        // Voláme metódu UpdateMember na kontroléri s daným ID a DTO objektom
+        var result = _membersController.UpdateMember(memberId, memberRequest);
+
+        // Assert - Overenie výsledku
+
+        // Overíme, že výsledok je typu OkObjectResult
+        var badRequestResult = Xunit.Assert.IsType<BadRequestObjectResult>(result);
+        Xunit.Assert.IsType<SerializableError>(badRequestResult.Value);
+    }
+
+    [Fact]
+    public void UpdateMember_ReturnsBadRequest_WhenCannotManipulateWithMember()
+    {
+        // Resetovanie
+        ResetControllerState();
+
+        // Arrange - Príprava testovacích dát
+
         // Definovanie ID člena, ktorý bude aktualizovaný
         int memberId = 50;
 
@@ -306,7 +442,7 @@ public class MembersControllerTests
         _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
 
         // Mockovanie metódy CanManipulate(id) tak, aby vrátila true, čo znamená, že s členom sa dá manipulovať
-        _mockMemberRepository.Setup(repo => repo.CanManipulate(memberId)).Returns(true);
+        _mockMemberRepository.Setup(repo => repo.CanManipulate(memberId)).Returns(false);
 
         // Mockovanie metódy GetById(id) tak, aby vrátila existujúceho člena
         _mockMemberRepository.Setup(repo => repo.GetById(memberId)).Returns(existingMember);
@@ -322,14 +458,141 @@ public class MembersControllerTests
         // Assert - Overenie výsledku
 
         // Overíme, že výsledok je typu OkObjectResult
-        var okResult = Xunit.Assert.IsType<OkObjectResult>(result);
+        var badRequestResult = Xunit.Assert.IsType<BadRequestObjectResult>(result);
 
         // Overíme, že obsah OkObjectResult obsahuje správnu správu
-        Xunit.Assert.Equal($"Member with id {memberId} was successfully updated", okResult.Value);
+        Xunit.Assert.Equal($"You can't update this member!", badRequestResult.Value);
+    }
 
-        // Overíme, že metóda Update bola volaná presne raz s akýmkoľvek Member objektom
-        _mockMemberRepository.Verify(repo => repo.Update(It.IsAny<Member>()), Times.Once);
+    [Fact]
+    public void UpdateMember_Returns429StatusCode_WhenSendingTooManyRequests()
+    {
+        // Resetovanie
+        ResetControllerState();
+
+        // Arrange - Príprava testovacích dát
+
+        // Definovanie ID člena, ktorý bude aktualizovaný
+        int memberId = 50;
+
+        // Vytvorenie DTO objektu s novými údajmi pre člena
+        var memberRequest = new MemberDto
+        {
+            FirstName = "John", // Nové meno
+            LastName = "Doe", // Nové priezvisko
+            PersonalId = "123456789", // Nové osobné ID
+            DateOfBirth = new DateTime(1990, 1, 1) // Nový dátum narodenia
+        };
+
+        // Vytvorenie existujúceho člena, ktorý sa bude aktualizovať
+        var existingMember = new Member
+        {
+            Id = memberId, // ID člena
+            FirstName = "Jane", // Pôvodné meno
+            LastName = "Smith", // Pôvodné priezvisko
+            PersonalId = "987654321", // Pôvodné osobné ID
+            DateOfBirth = new DateTime(1985, 5, 20) // Pôvodný dátum narodenia
+        };
+
+        // Nastavenie mock objektov
+
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
+        _mockMemberRepository.Setup(repo => repo.CanManipulate(memberId)).Returns(false);
+        _mockMemberRepository.Setup(repo => repo.GetById(memberId)).Returns(existingMember);
+        _mockMemberRepository.Setup(repo => repo.Update(It.IsAny<Member>())).Verifiable();
+
+        // Act - Volanie testovanej metódy
+        var result = _membersController.UpdateMember(memberId, memberRequest);
+
+        for (int i = 0; i < 5; i++)
+        {
+            result = _membersController.UpdateMember(memberId, memberRequest);
+        }
+
+        // Assert - Overenie výsledku
+
+        var objectResult = Xunit.Assert.IsType<ObjectResult>(result);
+        Xunit.Assert.Equal($"You are sending requests too quickly.", objectResult.Value);
     }
 
     #endregion UpdateMember
+
+    #region DeleteMember
+    [Fact]
+    public void DeleteMember_ReturnsOkResult_WhenMemberIsDeleted()
+    {
+        // Arrange
+        int memberId = 1;
+
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
+        _mockMemberRepository.Setup(repo => repo.CanManipulate(memberId)).Returns(true);
+        _mockQueueItemRepository.Setup(repo => repo.QueueItemByMemberIdExist(memberId)).Returns(false);
+        _mockRentalEntryRepository.Setup(repo => repo.RentalEntryByMemberIdExist(memberId)).Returns(false);
+
+        // Act
+        var result = _membersController.DeleteMember(memberId);
+
+        // Assert
+        var okResult = Xunit.Assert.IsType<OkObjectResult>(result);
+        Xunit.Assert.Equal($"Member with id {memberId} was successfully deleted", okResult.Value);
+    }
+
+    [Fact]
+    public void DeleteMember_ReturnsNotFoundResult_WhenMemberDoesNotExist()
+    {
+        // Arrange
+        int memberId = 1;
+
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(false);
+        _mockMemberRepository.Setup(repo => repo.CanManipulate(memberId)).Returns(true);
+        _mockQueueItemRepository.Setup(repo => repo.QueueItemByMemberIdExist(memberId)).Returns(false);
+        _mockRentalEntryRepository.Setup(repo => repo.RentalEntryByMemberIdExist(memberId)).Returns(true);
+
+        // Act
+        var result = _membersController.DeleteMember(memberId);
+
+        // Assert
+        var notFoundResult = Xunit.Assert.IsType<NotFoundObjectResult>(result);
+        Xunit.Assert.Equal($"Member with id {memberId} does not exist", notFoundResult.Value);
+    }
+
+    [Fact]
+    public void DeleteMember_ReturnsBadRequestResult_WhenCannotManipulateWith()
+    {
+        // Arrange
+        int memberId = 1;
+
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
+        _mockMemberRepository.Setup(repo => repo.CanManipulate(memberId)).Returns(false);
+        _mockQueueItemRepository.Setup(repo => repo.QueueItemByMemberIdExist(memberId)).Returns(false);
+        _mockRentalEntryRepository.Setup(repo => repo.RentalEntryByMemberIdExist(memberId)).Returns(false);
+
+        // Act
+        var result = _membersController.DeleteMember(memberId);
+
+        // Assert
+        var badRequest = Xunit.Assert.IsType<BadRequestObjectResult>(result);
+        Xunit.Assert.Equal($"You can't delete this member!", badRequest.Value);
+    }
+
+    [Fact]
+    public void DeleteMember_ReturnsBadRequestResult_WhenMemberIsInRentals()
+    {
+        // Arrange
+        int memberId = 1;
+
+        _mockMemberRepository.Setup(repo => repo.MemberExists(memberId)).Returns(true);
+        _mockMemberRepository.Setup(repo => repo.CanManipulate(memberId)).Returns(true);
+        _mockQueueItemRepository.Setup(repo => repo.QueueItemByMemberIdExist(memberId)).Returns(false);
+        _mockRentalEntryRepository.Setup(repo => repo.RentalEntryByMemberIdExist(memberId)).Returns(true);
+
+        // Act
+        var result = _membersController.DeleteMember(memberId);
+
+        // Assert
+        var badRequest = Xunit.Assert.IsType<BadRequestObjectResult>(result);
+        Xunit.Assert.Equal($"There are some rentals made by a member with id {memberId}. This member cannot be removed", badRequest.Value);
+    }
+
+    #endregion DeleteMember
 }

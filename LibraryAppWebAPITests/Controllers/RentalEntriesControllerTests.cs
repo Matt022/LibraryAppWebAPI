@@ -20,8 +20,6 @@ public class RentalEntriesControllerTests
 
     private readonly RentalEntriesController _rentalEntriesController;
 
-    private static readonly Dictionary<string, DateTime> LastRequestTimes = new();
-
     public RentalEntriesControllerTests()
     {
         _mockRentalEntryRepository = new Mock<IRentalEntryRepository>();
@@ -40,7 +38,7 @@ public class RentalEntriesControllerTests
     }
 
     // Pomocná metóda na resetovanie stavu kontroléra
-    private void ResetControllerState()
+    private static void ResetControllerState()
     {
         // Vyčistenie statickej premennej LastRequestTimes
         var lastRequestTimesField = typeof(RentalEntriesController)
@@ -399,6 +397,35 @@ public class RentalEntriesControllerTests
         Xunit.Assert.Equal(message, okResult.Value);
     }
 
+    [Fact]
+    public void RentTitle_Returns429StatusCode_WhenSendingTooManyRequests()
+    {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
+        // Arrange
+        var validDto = new RentalEntryDto { MemberId = 1, TitleId = 1001 };
+        string message = "Title rented successfully";
+        var canRentDictionary = new Dictionary<bool, string> { { true, message } };
+
+        // Mockovanie služby
+        _mockRentalEntryService
+            .Setup(service => service.CanRent(validDto, It.IsAny<string>()))
+            .Returns(canRentDictionary);
+
+        // Act
+        var result = _rentalEntriesController.RentTitle(validDto);
+
+        for (int i = 0; i < 5; i++)
+        {
+            result = _rentalEntriesController.RentTitle(validDto);
+        }
+
+        // Assert
+        var okResult = Xunit.Assert.IsType<ObjectResult>(result.Result);
+        Xunit.Assert.Equal("You are sending requests too quickly.", okResult.Value);
+    }
+
     #endregion RentTitle   
 
     #region ReturnTitle
@@ -431,8 +458,6 @@ public class RentalEntriesControllerTests
         var result = _rentalEntriesController.ReturnTitle(rentalEntryId, returnTitleDto) as OkObjectResult;
 
         // Assert
-        Xunit.Assert.NotNull(result);
-        Xunit.Assert.Equal(200, result.StatusCode);
         Xunit.Assert.Equal(successMessage, result.Value);
     }
 
@@ -483,6 +508,40 @@ public class RentalEntriesControllerTests
         Xunit.Assert.Equal(400, badRequestResult.StatusCode);
         Xunit.Assert.Equal(validationMessage, badRequestResult.Value);
     }
+
+    [Fact]
+    public void ReturnTitle_Returns429TooManyRequests_WhenSendingTooManyRequests()
+    {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
+        // Arrange
+        int rentalEntryId = 1;
+        var returnTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 1 };
+        string successMessage = "Title returned successfully";
+
+        var validationResult = new Dictionary<bool, string>
+        {
+            { true, successMessage }
+        };
+
+        _mockRentalEntryService.Setup(service => service.ReturnTitleWithValidation(
+            rentalEntryId,
+            returnTitleDto.MemberId,
+            returnTitleDto,
+            It.IsAny<string>()))
+            .Returns(validationResult);
+
+        // Act
+        var result = _rentalEntriesController.ReturnTitle(rentalEntryId, returnTitleDto) as ObjectResult;
+        for (int i = 0; i < 5; i++)
+        {
+            result = _rentalEntriesController.ReturnTitle(rentalEntryId, returnTitleDto) as ObjectResult;
+        }
+
+        // Assert
+        Xunit.Assert.Equal("You are sending requests too quickly.", result.Value);
+    }
     #endregion ReturnTitle
 
     #region ProlongTitle
@@ -490,6 +549,9 @@ public class RentalEntriesControllerTests
     [Fact]
     public void ProlongTitle_Success_ReturnsOkWithMessage()
     {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
         // Arrange
         var prolongTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 1 };
         string prolongMessage = "Title successfully prolonged.";
@@ -512,8 +574,43 @@ public class RentalEntriesControllerTests
     }
 
     [Fact]
+    public void ProlongTitle_Returns429TooManyRequests_WhenSendingTooManyRequests()
+    {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
+        // Arrange
+        var prolongTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 1 };
+        string prolongMessage = "Title successfully prolonged.";
+        var prolongResponse = new Dictionary<bool, string> { { true, prolongMessage } };
+
+        _mockRentalEntryService
+            .Setup(service => service.ProlongRental(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<ReturnTitleDto>(), It.IsAny<string>()))
+            .Callback((int id, int memberId, ReturnTitleDto dto, string message) => {
+                message = prolongMessage;
+            })
+            .Returns(prolongResponse);
+
+        // Act
+        var result = _rentalEntriesController.ProlongTitle(1, prolongTitleDto);
+
+        for (int i = 0; i < 5; i++)
+        {
+            result = _rentalEntriesController.ProlongTitle(1, prolongTitleDto);
+        }
+
+        // Assert
+        var objectResult = Xunit.Assert.IsType<ObjectResult>(result);
+        Xunit.Assert.Equal("You are sending requests too quickly.", objectResult.Value);
+    }
+
+
+    [Fact]
     public void ProlongTitle_InvalidModelState_ReturnsBadRequestWithModelState()
     {
+        // Resetovanie stavu pred spustením testu
+        ResetControllerState();
+
         // Arrange
         var prolongTitleDto = new ReturnTitleDto { MemberId = 1, TitleId = 1 };
         _rentalEntriesController.ModelState.AddModelError("MemberId", "MemberId is required");

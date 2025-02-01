@@ -1,6 +1,6 @@
 ﻿using Moq;
-using System.Linq.Expressions;
 using Xunit;
+using System.Linq.Expressions;
 
 using LibraryAppWebAPI.Models;
 using LibraryAppWebAPI.Base.Enums;
@@ -24,8 +24,6 @@ public class RentalEntryServiceTests
 
     private readonly RentalEntryService _rentalEntryService;
 
-    private const int BookRentalDays = 21;
-    private const int DvdRentalDays = 7;
     private const decimal BookDailyFee = 0.1M;
     private const int DvdDailyFee = 1;
 
