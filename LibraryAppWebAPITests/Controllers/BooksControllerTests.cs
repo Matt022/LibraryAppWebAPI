@@ -170,6 +170,34 @@ public class BooksControllerTests
         // Assert
         Xunit.Assert.IsType<BadRequestObjectResult>(result);
     }
+
+    [Fact]
+    public void CreateBook_ReturnsTooManyRequestsStatusCode_WhenSendingTooManyRequests()
+    {
+        // Reset controller
+        ResetControllerState();
+
+        // Arrange
+        var bookRequest = new BookDto
+        {
+            Name = "Book in Rentals",
+            Author = "Author",
+            NumberOfPages = 200,
+            ISBN = "123456789",
+            TotalAvailableCopies = 5
+        };
+
+        // Act
+        var result = _controller.CreateBook(bookRequest);
+        for (int i = 0; i < 5; i++)
+        {
+            result = _controller.CreateBook(bookRequest);
+        }
+
+        // Assert
+        var badRequestResult = Xunit.Assert.IsType<ObjectResult>(result);
+        Xunit.Assert.Equal("You are sending requests too quickly.", badRequestResult.Value);
+    }
     #endregion CreateBook
 
     #region UpdateBook
@@ -247,6 +275,70 @@ public class BooksControllerTests
     }
 
     [Fact]
+    public void UpdateBook_ReturnsBadRequest_WhenCannotManipulateWith()
+    {
+        // Reset controller
+        ResetControllerState();
+
+        // Arrange
+        int bookId = 1;
+        var bookRequest = new BookDto
+        {
+            Name = "Book in Rentals",
+            Author = "Author",
+            NumberOfPages = 200,
+            ISBN = "123456789",
+            TotalAvailableCopies = 5
+        };
+
+        _mockBookRepo.Setup(repo => repo.BookExists(bookId)).Returns(true);
+        _mockBookRepo.Setup(repo => repo.CanManipulate(bookId)).Returns(false);
+        _mockBookRepo.Setup(repo => repo.GetById(bookId)).Returns(new Book { Id = bookId });
+        _mockRentalEntryRepo.Setup(repo => repo.RentalEntryByTitleIdExist(bookId)).Returns(true);
+
+        // Act
+        var result = _controller.UpdateBook(bookId, bookRequest);
+
+        // Assert
+        var badRequestResult = Xunit.Assert.IsType<BadRequestObjectResult>(result);
+        Xunit.Assert.Equal("You can't update this book!", badRequestResult.Value);
+    }
+    
+    [Fact]
+    public void UpdateBook_ReturnsTooManyRequestsStatusCode_WhenSendingTooManyRequests()
+    {
+        // Reset controller
+        ResetControllerState();
+
+        // Arrange
+        int bookId = 1;
+        var bookRequest = new BookDto
+        {
+            Name = "Book in Rentals",
+            Author = "Author",
+            NumberOfPages = 200,
+            ISBN = "123456789",
+            TotalAvailableCopies = 5
+        };
+
+        _mockBookRepo.Setup(repo => repo.BookExists(bookId)).Returns(true);
+        _mockBookRepo.Setup(repo => repo.CanManipulate(bookId)).Returns(false);
+        _mockBookRepo.Setup(repo => repo.GetById(bookId)).Returns(new Book { Id = bookId });
+        _mockRentalEntryRepo.Setup(repo => repo.RentalEntryByTitleIdExist(bookId)).Returns(true);
+
+        // Act
+        var result = _controller.UpdateBook(bookId, bookRequest);
+        for (int i = 0; i < 5; i++)
+        {
+            result = _controller.UpdateBook(bookId, bookRequest);
+        }
+
+        // Assert
+        var badRequestResult = Xunit.Assert.IsType<ObjectResult>(result);
+        Xunit.Assert.Equal("You are sending requests too quickly.", badRequestResult.Value);
+    }
+
+    [Fact]
     public void UpdateBook_ReturnsBadRequest_WhenModelStateIsInvalid()
     {
         // Arrange
@@ -303,6 +395,25 @@ public class BooksControllerTests
         // Assert
         var notFoundResult = Xunit.Assert.IsType<NotFoundObjectResult>(result);
         Xunit.Assert.Equal($"Book with id {bookId} does not exist", notFoundResult.Value);
+        _mockBookRepo.Verify(repo => repo.Delete(It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public void DeleteBook_ReturnsBadRequest_WhenCannotManipulateWith()
+    {
+        // Arrange
+        int bookId = 50;
+
+        _mockBookRepo.Setup(repo => repo.BookExists(bookId)).Returns(true);
+        _mockBookRepo.Setup(repo => repo.CanManipulate(bookId)).Returns(false);
+        _mockRentalEntryRepo.Setup(repo => repo.RentalEntryByTitleIdExist(bookId)).Returns(true);
+
+        // Act
+        var result = _controller.DeleteBook(bookId);
+
+        // Assert
+        var badRequestResult = Xunit.Assert.IsType<BadRequestObjectResult>(result);
+        Xunit.Assert.Equal("You can't delete this book!", badRequestResult.Value);
         _mockBookRepo.Verify(repo => repo.Delete(It.IsAny<int>()), Times.Never);
     }
 

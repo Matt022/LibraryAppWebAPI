@@ -1,6 +1,7 @@
-﻿using LibraryAppWebAPI.Base;
+﻿using System.ComponentModel.DataAnnotations;
+
+using LibraryAppWebAPI.Base;
 using LibraryAppWebAPI.Base.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace LibraryAppWebAPI.Models;
 

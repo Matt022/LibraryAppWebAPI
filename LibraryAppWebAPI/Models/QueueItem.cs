@@ -1,5 +1,6 @@
-﻿using LibraryAppWebAPI.Base;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+
+using LibraryAppWebAPI.Base;
 
 namespace LibraryAppWebAPI.Models;
 
